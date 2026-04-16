@@ -1,0 +1,37 @@
+import {
+  FooterWrapper,
+  FooterInner,
+  FooterTop,
+  BrandLink,
+  BrandIcon,
+  BrandText,
+  FooterLinks,
+  FooterLink,
+  FooterBottom,
+} from './Footer.styles';
+
+export default function Footer() {
+  return (
+    <FooterWrapper>
+      <FooterInner>
+        <FooterTop>
+          <BrandLink href = "/">
+            <BrandIcon>
+              <span>A</span>
+            </BrandIcon>
+            <BrandText>Acta</BrandText>
+          </BrandLink>
+
+          <FooterLinks>
+            <FooterLink href="#">서비스 소개</FooterLink>
+            <FooterLink href="#">문의</FooterLink>
+            <FooterLink href="#">이용약관</FooterLink>
+            <FooterLink href="#">개인정보처리방침</FooterLink>
+          </FooterLinks>
+        </FooterTop>
+
+        <FooterBottom>© 2026 Acta. All rights reserved.</FooterBottom>
+      </FooterInner>
+    </FooterWrapper>
+  );
+}
