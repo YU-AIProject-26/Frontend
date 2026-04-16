@@ -15,13 +15,19 @@ export const ToggleButton = styled.button`
   align-items: center;
   justify-content: center;
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-  cursor: pointer;
+  cursor: default;
   transition:
     box-shadow 0.2s ease,
     background-color 0.2s ease,
-    color 0.2s ease;
+    color 0.2s ease,
+    transform 0.2s ease;
 
   &:hover {
+    background: ${({ theme }) =>
+      theme.mode === 'light'
+        ? 'rgba(17, 24, 39, 0.9)'
+        : 'rgba(249, 250, 251, 0.9)'};
+
     box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15);
   }
 

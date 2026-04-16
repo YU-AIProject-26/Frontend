@@ -84,6 +84,7 @@ export const HeaderActions = styled.div`
 
 export const HeaderGhostButton = styled(Button)`
   font-size: 0.875rem;
+  cursor: default;
 
   &:hover {
     background: #f3f4f6;
@@ -102,6 +103,7 @@ export const HeaderPrimaryButton = styled(Button)`
   font-size: 0.875rem;
   height: 2.25rem;
   padding: 0 1rem;
+  cursor: default;
 
   &:hover {
     background: rgba(37, 99, 235, 0.9);
@@ -188,6 +190,7 @@ export const HeroPrimaryButton = styled(Button)`
   color: #ffffff;
   border-radius: 0.375rem;
   box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.2);
+  cursor: default;
   transition:
     background-color 0.2s ease,
     box-shadow 0.2s ease,
@@ -208,6 +211,7 @@ export const HeroGhostButton = styled(Button)`
   height: 3rem;
   padding: 0 1.5rem;
   font-size: 1rem;
+  cursor: default;
 
   &:hover {
     background: #f3f4f6;
@@ -684,6 +688,7 @@ export const CTAButton = styled(Button)`
   font-size: 1rem;
   border-radius: 0.375rem;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  cursor: default;
 
   &:hover {
     background: #e5e7eb;
