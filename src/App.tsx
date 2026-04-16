@@ -1,11 +1,11 @@
-//import { useState } from "react";
+import LandingPage from './pages/LandingPage';
+import ThemeToggle from './components/ThemeToggle';
 
-function App() {
+export default function App() {
   return (
-    <div style={{ padding: "20px", textAlign: "center" }}>
-      <h1>Acta Frontend</h1>
-    </div>
+    <>
+      <LandingPage />
+      <ThemeToggle />
+    </>
   );
 }
-
-export default App;
