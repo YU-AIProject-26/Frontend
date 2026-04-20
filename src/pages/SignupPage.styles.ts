@@ -179,8 +179,15 @@ export const TermsLabel = styled.span`
   }
 `;
 
-export const TermsLink = styled(Link)`
+export const TermsLinkButton = styled.button`
+  border: none;
+  padding: 0;
+  background: transparent;
   color: #2563eb;
+  font-size: inherit;
+  font-weight: 500;
+  line-height: inherit;
+  cursor: default;
 
   &:hover {
     text-decoration: underline;
@@ -257,7 +264,7 @@ export const SocialSection = styled.div`
 
 export const SocialButton = styled.button`
   width: 100%;
-  height: 3rem;
+  height: 2.75rem;
   border-radius: 0.75rem;
   border: 1px solid #e5e7eb;
   background: #ffffff;
@@ -280,11 +287,11 @@ export const SocialButton = styled.button`
 
   html.dark & {
     border-color: #262626;
-    background: rgba(38, 38, 38, 0.3);
+    background: #191919;
     color: #f9fafb;
 
     &:hover {
-      background: rgba(38, 38, 38, 0.5);
+      background: #262626;
     }
   }
 `;
