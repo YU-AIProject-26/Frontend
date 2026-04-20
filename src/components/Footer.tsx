@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import {
   FooterWrapper,
   FooterInner,
@@ -15,7 +16,7 @@ export default function Footer() {
     <FooterWrapper>
       <FooterInner>
         <FooterTop>
-          <BrandLink href = "/">
+          <BrandLink as = {Link} to = "/">
             <BrandIcon>
               <span>A</span>
             </BrandIcon>
@@ -23,10 +24,14 @@ export default function Footer() {
           </BrandLink>
 
           <FooterLinks>
-            <FooterLink href="#">서비스 소개</FooterLink>
-            <FooterLink href="#">문의</FooterLink>
-            <FooterLink href="#">이용약관</FooterLink>
-            <FooterLink href="#">개인정보처리방침</FooterLink>
+            <FooterLink href = "#">서비스 소개</FooterLink>
+            <FooterLink href = "#">문의</FooterLink>
+            <FooterLink as = {Link} to = "/terms">
+              이용약관
+            </FooterLink>
+            <FooterLink as = {Link} to = "/privacy">
+              개인정보처리방침
+            </FooterLink>
           </FooterLinks>
         </FooterTop>
 
