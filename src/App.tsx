@@ -3,6 +3,8 @@ import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
 import PasswordResetPage from './pages/PasswordResetPage';
+import PrivacyPage from './pages/PrivacyPage';
+import TermsPage from './pages/TermsPage';
 import ThemeToggle from './components/ThemeToggle';
 import AuthLayout from './components/AuthLayout';
 
@@ -18,6 +20,9 @@ export default function App() {
           <Route path = "/auth/signup" element = {<SignupPage />} />
           <Route path = "/auth/reset-password" element = {<PasswordResetPage />} />
         </Route>
+
+        <Route path = "/privacy" element = {<PrivacyPage />} />
+        <Route path = "/terms" element = {<TermsPage />} />
 
         <Route path = "*" element = {<Navigate to = "/landing" replace />} />
       </Routes>
