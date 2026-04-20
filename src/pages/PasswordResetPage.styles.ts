@@ -35,6 +35,7 @@ export const Subtitle = styled.p`
   font-size: 0.875rem;
   color: #6b7280;
   margin: 0;
+  line-height: 1.625;
 
   html.dark & {
     color: #9ca3af;
@@ -122,8 +123,48 @@ export const OutlineButton = styled.button`
     background-color 0.2s ease,
     border-color 0.2s ease,
     color 0.2s ease;
-  margin-top: 0.25rem;
-  margin-bottom: 0.25rem;
+
+  &:hover {
+    background: #f3f4f6;
+  }
+
+  html.dark & {
+    border-color: #262626;
+    background: rgba(38, 38, 38, 0.3);
+    color: #f9fafb;
+
+    &:hover {
+      background: rgba(38, 38, 38, 0.5);
+    }
+  }
+`;
+
+export const CodeRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+`;
+
+export const CodeInputWrapper = styled.div`
+  flex: 1;
+`;
+
+export const CodeCheckButton = styled.button`
+  width: 5.5rem;
+  height: 2.75rem;
+  border-radius: 0.75rem;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  color: #111827;
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.5;
+  flex-shrink: 0;
+  cursor: default;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease;
 
   &:hover {
     background: #f3f4f6;

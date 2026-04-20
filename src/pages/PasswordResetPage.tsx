@@ -9,6 +9,9 @@ import {
   Label,
   TextInput,
   OutlineButton,
+  CodeRow,
+  CodeInputWrapper,
+  CodeCheckButton,
   SubmitButton,
   BottomSection,
   BottomLink,
@@ -36,7 +39,16 @@ export default function PasswordResetPage() {
 
         <FieldGroup>
           <Label htmlFor = "code">인증코드</Label>
-          <TextInput id = "code" type = "text" placeholder = "6자리 코드 입력" />
+          <CodeRow>
+            <CodeInputWrapper>
+              <TextInput
+                id = "code"
+                type = "text"
+                placeholder = "6자리 코드 입력"
+              />
+            </CodeInputWrapper>
+            <CodeCheckButton type = "button">확인</CodeCheckButton>
+          </CodeRow>
         </FieldGroup>
 
         <FieldGroup>
