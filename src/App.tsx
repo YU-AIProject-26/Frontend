@@ -26,8 +26,8 @@ export default function App() {
           <Route path = "/auth/reset-password" element = {<PasswordResetPage />} />
         </Route>
 
-        <Route path="/service" element={<ServicePage />} />
-        <Route path="/contact" element={<ContactPage />} />
+        <Route path = "/service" element = {<ServicePage />} />
+        <Route path = "/contact" element = {<ContactPage />} />
         <Route path = "/privacy" element = {<PrivacyPage />} />
         <Route path = "/terms" element = {<TermsPage />} />
 
