@@ -24,8 +24,12 @@ export default function Footer() {
           </BrandLink>
 
           <FooterLinks>
-            <FooterLink href = "#">서비스 소개</FooterLink>
-            <FooterLink href = "#">문의</FooterLink>
+            <FooterLink as = {Link} to = "/service">
+              서비스 소개
+            </FooterLink>
+            <FooterLink as = {Link} to = "/contact">
+              문의
+            </FooterLink>
             <FooterLink as = {Link} to = "/terms">
               이용약관
             </FooterLink>
