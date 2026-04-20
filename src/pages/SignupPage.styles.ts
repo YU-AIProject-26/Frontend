@@ -179,8 +179,15 @@ export const TermsLabel = styled.span`
   }
 `;
 
-export const TermsLink = styled(Link)`
+export const TermsLinkButton = styled.button`
+  border: none;
+  padding: 0;
+  background: transparent;
   color: #2563eb;
+  font-size: inherit;
+  font-weight: 500;
+  line-height: inherit;
+  cursor: default;
 
   &:hover {
     text-decoration: underline;
