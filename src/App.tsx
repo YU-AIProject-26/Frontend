@@ -10,6 +10,7 @@ import TermsPage from './pages/TermsPage';
 import ThemeToggle from './components/ThemeToggle';
 import AuthLayout from './components/AuthLayout';
 import ScrollToTop from './components/ScrollToTop';
+import OnboardingPage from './pages/OnboardingPage';
 
 export default function App() {
   return (
@@ -19,6 +20,7 @@ export default function App() {
       <Routes>
         <Route path = "/" element = {<Navigate to = "/landing" replace />} />
         <Route path = "/landing" element = {<LandingPage />} />
+        <Route path = "/onboarding" element = {<OnboardingPage />} />
 
         <Route element = {<AuthLayout />}>
           <Route path = "/auth/login" element = {<LoginPage />} />
