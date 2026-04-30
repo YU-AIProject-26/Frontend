@@ -11,6 +11,7 @@ import ThemeToggle from './components/ThemeToggle';
 import AuthLayout from './components/AuthLayout';
 import ScrollToTop from './components/ScrollToTop';
 import OnboardingPage from './pages/OnboardingPage';
+import NotFoundPage from './pages/NotFoundPage';
 
 export default function App() {
   return (
@@ -32,8 +33,9 @@ export default function App() {
         <Route path = "/contact" element = {<ContactPage />} />
         <Route path = "/privacy" element = {<PrivacyPage />} />
         <Route path = "/terms" element = {<TermsPage />} />
+        <Route path = "/not-found" element = {<NotFoundPage />} />
 
-        <Route path = "*" element = {<Navigate to = "/landing" replace />} />
+        <Route path = "*" element = {<Navigate to = "/not-found" replace />} />
       </Routes>
 
       <ThemeToggle />
