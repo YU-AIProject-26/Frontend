@@ -1,4 +1,6 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
+import DashboardLayout from './components/DashboardLayout';
+import DashboardPage from './pages/DashboardPage';
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
@@ -33,8 +35,12 @@ export default function App() {
         <Route path = "/contact" element = {<ContactPage />} />
         <Route path = "/privacy" element = {<PrivacyPage />} />
         <Route path = "/terms" element = {<TermsPage />} />
-        <Route path = "/not-found" element = {<NotFoundPage />} />
 
+        <Route element = {<DashboardLayout />}>
+          <Route path = "/dashboard" element = {<DashboardPage />} />
+        </Route>
+
+        <Route path = "/not-found" element = {<NotFoundPage />} />
         <Route path = "*" element = {<Navigate to = "/not-found" replace />} />
       </Routes>
 
