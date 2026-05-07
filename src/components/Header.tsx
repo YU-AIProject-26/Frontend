@@ -125,6 +125,11 @@ export default function Header() {
 
   const unreadCount = notifications.filter((item) => item.unread).length;
 
+  const closeAllDropdowns = () => {
+    setIsNotificationOpen(false);
+    setIsProfileOpen(false);
+  };
+
   const handleReadAll = () => {
     setNotifications((prev) =>
       prev.map((item) => ({
@@ -132,12 +137,13 @@ export default function Header() {
         unread: false,
       }))
     );
+    setIsNotificationOpen(false);
   };
 
   return (
     <HeaderWrapper>
       <HeaderInner>
-        <LogoLink to = "/">
+        <LogoLink to = "/" onClick = {closeAllDropdowns}>
           <LogoIcon>
             <span>A</span>
           </LogoIcon>
@@ -145,13 +151,13 @@ export default function Header() {
         </LogoLink>
 
         <Nav>
-          <NavItemLink to = "/meetings">
+          <NavItemLink to = "/meetings" onClick = {closeAllDropdowns}>
             <GhostButton type = "button">내 회의</GhostButton>
           </NavItemLink>
-          <NavItemLink to = "/calendar">
+          <NavItemLink to = "/calendar" onClick = {closeAllDropdowns}>
             <GhostButton type = "button">일정</GhostButton>
           </NavItemLink>
-          <NavItemLink to = "/todo">
+          <NavItemLink to = "/todo" onClick = {closeAllDropdowns}>
             <GhostButton type = "button">Todo</GhostButton>
           </NavItemLink>
         </Nav>
@@ -180,8 +186,20 @@ export default function Header() {
 
                 <NotificationList>
                   {notifications.map((item) => (
-                    <NotificationItem key = {item.id}>
-                      <NotificationIconBox $variant = {item.type}>
+                    <NotificationItem
+                      key={item.id}
+                      onClick={() => {
+                        setNotifications((prev) =>
+                          prev.map((notification) =>
+                            notification.id === item.id
+                              ? { ...notification, unread: false }
+                              : notification
+                          )
+                        );
+                        setIsNotificationOpen(false);
+                      }}
+                    >
+                      <NotificationIconBox $variant={item.type}>
                         {item.type === 'blue' && <Bell className = "notify-icon" />}
 
                         {item.type === 'green' && (
@@ -268,7 +286,10 @@ export default function Header() {
                 </NotificationList>
 
                 <DropdownFooter>
-                  <FooterButtonLink to = "/notifications">
+                  <FooterButtonLink
+                    to = "/notifications"
+                    onClick = {closeAllDropdowns}
+                  >
                     모든 알림 보기
                   </FooterButtonLink>
                 </DropdownFooter>
@@ -297,9 +318,17 @@ export default function Header() {
                 </ProfileInfo>
 
                 <ProfileMenuList>
-                  <ProfileMenuLink to = "/my">마이페이지</ProfileMenuLink>
-                  <ProfileMenuLink to = "/settings">환경설정</ProfileMenuLink>
-                  <ProfileMenuLink to = "/landing" $danger>
+                  <ProfileMenuLink to = "/my" onClick = {closeAllDropdowns}>
+                    마이페이지
+                  </ProfileMenuLink>
+                  <ProfileMenuLink to = "/settings" onClick = {closeAllDropdowns}>
+                    환경설정
+                  </ProfileMenuLink>
+                  <ProfileMenuLink
+                    to = "/landing"
+                    $danger
+                    onClick = {closeAllDropdowns}
+                  >
                     로그아웃
                   </ProfileMenuLink>
                 </ProfileMenuList>
