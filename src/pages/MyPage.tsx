@@ -65,8 +65,8 @@ export default function MyPage() {
                 <ProfileEmail>{user.email}</ProfileEmail>
               </ProfileInfo>
 
-              <OutlineButton type="button">
-                <User className="button-icon" />
+              <OutlineButton type = "button">
+                <User className = "button-icon" />
                 프로필 수정
               </OutlineButton>
             </ProfileTop>
@@ -100,13 +100,13 @@ export default function MyPage() {
         </SectionHeader>
 
         <FormGroup>
-          <Label htmlFor="name">이름</Label>
-          <Input id="name" defaultValue={user.name} />
+          <Label htmlFor = "name">이름</Label>
+          <Input id = "name" defaultValue = {user.name} />
         </FormGroup>
 
         <FormGroup>
-          <Label htmlFor="email">이메일</Label>
-          <Input id="email" type="email" defaultValue={user.email} disabled />
+          <Label htmlFor = "email">이메일</Label>
+          <Input id = "email" type = "email" defaultValue = {user.email} disabled />
           <HelperText>이메일은 변경할 수 없습니다.</HelperText>
         </FormGroup>
 
@@ -119,13 +119,13 @@ export default function MyPage() {
           <Label>플랜</Label>
           <PlanRow>
             <InfoText>{user.plan}</InfoText>
-            <PrimaryButton type="button">플랜 업그레이드</PrimaryButton>
+            <PrimaryButton type = "button">플랜 업그레이드</PrimaryButton>
           </PlanRow>
         </FormGroup>
 
         <Separator />
 
-        <PrimaryButton type="button" $fullWidth>
+        <PrimaryButton type = "button" $fullWidth>
           변경사항 저장
         </PrimaryButton>
       </Card>
@@ -141,12 +141,12 @@ export default function MyPage() {
         <ActionStack>
           <PlanRow>
             <div>
-              <Label as="p">비밀번호</Label>
+              <Label as = "p">비밀번호</Label>
               <HelperText>마지막 변경: 2026년 3월 1일</HelperText>
             </div>
 
-            <Link to="/auth/reset-password">
-              <OutlineButton type="button">비밀번호 변경</OutlineButton>
+            <Link to = "/auth/reset-password">
+              <OutlineButton type = "button">비밀번호 변경</OutlineButton>
             </Link>
           </PlanRow>
 
@@ -154,11 +154,11 @@ export default function MyPage() {
 
           <PlanRow>
             <div>
-              <Label as="p">2단계 인증</Label>
+              <Label as = "p">2단계 인증</Label>
               <HelperText>계정 보안을 강화하세요.</HelperText>
             </div>
 
-            <OutlineButton type="button">설정하기</OutlineButton>
+            <OutlineButton type = "button">설정하기</OutlineButton>
           </PlanRow>
         </ActionStack>
       </Card>
@@ -169,15 +169,15 @@ export default function MyPage() {
         </SectionHeader>
 
         <ActionStack>
-          <FullWidthLink to="/landing">
-            <OutlineButton type="button" $fullWidth $justifyStart>
-              <LogOut className="button-icon" />
+          <FullWidthLink to = "/landing">
+            <OutlineButton type = "button" $fullWidth $justifyStart>
+              <LogOut className = "button-icon" />
               로그아웃
             </OutlineButton>
           </FullWidthLink>
 
-          <DangerButton type="button">
-            <Trash2 className="button-icon" />
+          <DangerButton type = "button">
+            <Trash2 className = "button-icon" />
             계정 탈퇴
           </DangerButton>
 
