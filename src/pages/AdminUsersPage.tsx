@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Search, ChevronRight, Shield, UserX, CheckCircle2, Users, X } from 'lucide-react';
+import { Search, ChevronRight, Shield, UserX, CheckCircle2, Users, X, RotateCcw } from 'lucide-react';
 import {
   AdminSubPageWrapper,
   SubPageHeader,
@@ -37,12 +37,20 @@ import {
   SummaryCard,
   SummaryLabel,
   SummaryValue,
+  ToolbarActions,
+  ToolbarButton,
+  ResultMeta,
 } from './AdminSubPage.styles';
 import AdminActionToast from '../components/AdminActionToast';
 import { useAuth } from '../contexts/useAuth';
 
 type UserRole = 'admin' | 'user';
 type UserStatus = '활성' | '대기' | '정지';
+type UserSort =
+  | 'joined-desc'
+  | 'joined-asc'
+  | 'nickname-asc'
+  | 'meetings-desc';
 
 type UserItem = {
   id: number;
@@ -114,6 +122,7 @@ export default function AdminUsersPage() {
   const [searchKeyword, setSearchKeyword] = useState('');
   const [roleFilter, setRoleFilter] = useState<'all' | UserRole>('all');
   const [statusFilter, setStatusFilter] = useState<'all' | UserStatus>('all');
+  const [sortBy, setSortBy] = useState<UserSort>('joined-desc');
 
   const [selectedUser, setSelectedUser] = useState<UserItem | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
@@ -131,7 +140,7 @@ export default function AdminUsersPage() {
   });
 
   const filteredUsers = useMemo(() => {
-    return users.filter((target) => {
+    const result = users.filter((target) => {
       const matchesKeyword =
         target.nickname.toLowerCase().includes(searchKeyword.toLowerCase()) ||
         target.email.toLowerCase().includes(searchKeyword.toLowerCase());
@@ -142,7 +151,23 @@ export default function AdminUsersPage() {
 
       return matchesKeyword && matchesRole && matchesStatus;
     });
-  }, [users, searchKeyword, roleFilter, statusFilter]);
+
+    return [...result].sort((a, b) => {
+      if (sortBy === 'joined-desc') {
+        return b.joinedAt.localeCompare(a.joinedAt);
+      }
+
+      if (sortBy === 'joined-asc') {
+        return a.joinedAt.localeCompare(b.joinedAt);
+      }
+
+      if (sortBy === 'nickname-asc') {
+        return a.nickname.localeCompare(b.nickname, 'ko');
+      }
+
+      return b.meetings - a.meetings;
+    });
+  }, [users, searchKeyword, roleFilter, statusFilter, sortBy]);
 
   const summary = useMemo(() => {
     return {
@@ -168,6 +193,14 @@ export default function AdminUsersPage() {
       ...prev,
       open: false,
     }));
+  };
+
+  const resetToolbar = () => {
+    setSearchKeyword('');
+    setRoleFilter('all');
+    setStatusFilter('all');
+    setSortBy('joined-desc');
+    showToast('회원 관리 필터가 초기화되었습니다.', 'success');
   };
 
   const openDetailModal = (target: UserItem) => {
@@ -309,7 +342,26 @@ export default function AdminUsersPage() {
             <option value = "대기">대기</option>
             <option value = "정지">정지</option>
           </FilterSelect>
+
+          <FilterSelect
+            value = {sortBy}
+            onChange = {(e) => setSortBy(e.target.value as UserSort)}
+          >
+            <option value = "joined-desc">최신 가입순</option>
+            <option value = "joined-asc">오래된 가입순</option>
+            <option value = "nickname-asc">닉네임순</option>
+            <option value = "meetings-desc">회의 많은순</option>
+          </FilterSelect>
+
+          <ToolbarActions>
+            <ToolbarButton type = "button" onClick = {resetToolbar}>
+              <RotateCcw className = "toolbar-icon" />
+              초기화
+            </ToolbarButton>
+          </ToolbarActions>
         </SearchFilterRow>
+
+        <ResultMeta>현재 조건에 맞는 회원 {filteredUsers.length}명</ResultMeta>
 
         <DataCard>
           {filteredUsers.length === 0 ? (

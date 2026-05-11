@@ -797,3 +797,53 @@ export const NoticeItemMeta = styled.p`
     color: #9ca3af;
   }
 `;
+
+export const ToolbarActions = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+`;
+
+export const ToolbarButton = styled.button`
+  height: 2.875rem;
+  padding: 0 1rem;
+  border-radius: 0.75rem;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  color: #111827;
+  font-size: 0.875rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  white-space: nowrap;
+
+  .toolbar-icon {
+    width: 0.95rem;
+    height: 0.95rem;
+  }
+
+  &:hover {
+    background: #f9fafb;
+  }
+
+  html.dark & {
+    border-color: #262626;
+    background: #111827;
+    color: #ffffff;
+
+    &:hover {
+      background: #0a0a0a;
+    }
+  }
+`;
+
+export const ResultMeta = styled.p`
+  margin: 0 0 0.875rem;
+  font-size: 0.875rem;
+  color: #6b7280;
+
+  html.dark & {
+    color: #9ca3af;
+  }
+`;
