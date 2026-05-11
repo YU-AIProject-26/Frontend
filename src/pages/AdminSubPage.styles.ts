@@ -847,3 +847,39 @@ export const ResultMeta = styled.p`
     color: #9ca3af;
   }
 `;
+
+export const EditNoticeBanner = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  margin-bottom: 1rem;
+  padding: 0.875rem 1rem;
+  border-radius: 0.875rem;
+  background: rgba(37, 99, 235, 0.08);
+  color: ${({ theme }) => theme.colors.accent};
+
+  .edit-icon {
+    width: 1rem;
+    height: 1rem;
+    flex-shrink: 0;
+  }
+
+  html.dark & {
+    background: rgba(37, 99, 235, 0.14);
+  }
+`;
+
+export const EditNoticeText = styled.p`
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+`;
+
+export const NoticeItemContent = styled.div`
+  min-width: 0;
+  flex: 1;
+`;
+
+export const NoticeItemActions = styled.div`
+  flex-shrink: 0;
+`;

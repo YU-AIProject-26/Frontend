@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { ChevronRight, X, Megaphone, RotateCcw, Search } from 'lucide-react';
+import { ChevronRight, X, Megaphone, RotateCcw, Search, Pencil } from 'lucide-react';
 import {
   AdminSubPageWrapper,
   SubPageHeader,
@@ -50,14 +50,15 @@ import {
   ToolbarActions,
   ToolbarButton,
   ResultMeta,
+  EditNoticeBanner,
+  EditNoticeText,
+  NoticeItemContent,
+  NoticeItemActions,
 } from './AdminSubPage.styles';
 import AdminActionToast from '../components/AdminActionToast';
 
 type NoticeStatus = '게시중' | '임시저장';
-type NoticeSort =
-  | 'created-desc'
-  | 'created-asc'
-  | 'title-asc';
+type NoticeSort = 'created-desc' | 'created-asc' | 'title-asc';
 
 type NoticeItemType = {
   id: number;
@@ -145,6 +146,28 @@ export default function AdminNoticesPage() {
     });
   }, [notices, searchKeyword, statusFilter, sortBy]);
 
+  const editingNotice = useMemo(() => {
+    if (editingId === null) return null;
+    return notices.find((item) => item.id === editingId) ?? null;
+  }, [editingId, notices]);
+
+  const trimmedTitle = titleInput.trim();
+  const trimmedContent = contentInput.trim();
+  const isFormValid = trimmedTitle.length > 0 && trimmedContent.length > 0;
+
+  const hasChanged = useMemo(() => {
+    if (editingNotice === null) {
+      return isFormValid;
+    }
+
+    return (
+      trimmedTitle !== editingNotice.title.trim() ||
+      trimmedContent !== editingNotice.content.trim()
+    );
+  }, [editingNotice, isFormValid, trimmedTitle, trimmedContent]);
+
+  const isSubmitDisabled = !isFormValid || !hasChanged;
+
   const showToast = (message: string, variant: 'success' | 'error' = 'success') => {
     setToast({
       open: true,
@@ -174,13 +197,7 @@ export default function AdminNoticesPage() {
   };
 
   const handleSaveDraft = () => {
-    const trimmedTitle = titleInput.trim();
-    const trimmedContent = contentInput.trim();
-
-    if (!trimmedTitle || !trimmedContent) {
-      showToast('공지 제목과 내용을 모두 입력해주세요.', 'error');
-      return;
-    }
+    if (isSubmitDisabled) return;
 
     if (editingId !== null) {
       setNotices((prev) =>
@@ -214,13 +231,7 @@ export default function AdminNoticesPage() {
   };
 
   const handlePublishNotice = () => {
-    const trimmedTitle = titleInput.trim();
-    const trimmedContent = contentInput.trim();
-
-    if (!trimmedTitle || !trimmedContent) {
-      showToast('공지 제목과 내용을 모두 입력해주세요.', 'error');
-      return;
-    }
+    if (isSubmitDisabled) return;
 
     if (editingId !== null) {
       setNotices((prev) =>
@@ -321,6 +332,15 @@ export default function AdminNoticesPage() {
         </SummaryRow>
 
         <FormCard>
+          {editingNotice && (
+            <EditNoticeBanner>
+              <Pencil className = "edit-icon" />
+              <EditNoticeText>
+                현재 <strong>{editingNotice.title}</strong> 공지사항을 수정 중입니다.
+              </EditNoticeText>
+            </EditNoticeBanner>
+          )}
+
           <FormGroup>
             <FormLabel htmlFor = "notice-title">공지 제목</FormLabel>
             <FormInput
@@ -348,11 +368,19 @@ export default function AdminNoticesPage() {
               </FormSecondaryButton>
             )}
 
-            <FormSecondaryButton type = "button" onClick = {handleSaveDraft}>
+            <FormSecondaryButton
+              type = "button"
+              onClick = {handleSaveDraft}
+              disabled = {isSubmitDisabled}
+            >
               임시 저장
             </FormSecondaryButton>
 
-            <FormPrimaryButton type = "button" onClick = {handlePublishNotice}>
+            <FormPrimaryButton
+              type = "button"
+              onClick = {handlePublishNotice}
+              disabled = {isSubmitDisabled}
+            >
               {editingId !== null ? '공지 수정' : '공지 등록'}
             </FormPrimaryButton>
           </FormButtonRow>
@@ -406,29 +434,35 @@ export default function AdminNoticesPage() {
             </EmptyStateBox>
           ) : (
             filteredNotices.map((item) => (
-              <NoticeItem key = {item.id}>
-                <div>
+              <NoticeItem
+                key = {item.id}
+                $active = {editingId === item.id}
+              >
+                <NoticeItemContent>
                   <NoticeItemTitle>{item.title}</NoticeItemTitle>
                   <NoticeItemMeta>
                     {item.createdAt} · {item.status}
+                    {editingId === item.id ? ' · 현재 수정 중' : ''}
                   </NoticeItemMeta>
-                </div>
+                </NoticeItemContent>
 
-                <TableActionRow>
-                  <TableActionButton
-                    type = "button"
-                    onClick = {() => handleEditNotice(item)}
-                  >
-                    수정
-                  </TableActionButton>
+                <NoticeItemActions>
+                  <TableActionRow>
+                    <TableActionButton
+                      type = "button"
+                      onClick = {() => handleEditNotice(item)}
+                    >
+                      수정
+                    </TableActionButton>
 
-                  <TableActionButton
-                    type = "button"
-                    onClick = {() => openDeleteModal(item)}
-                  >
-                    삭제
-                  </TableActionButton>
-                </TableActionRow>
+                    <TableActionButton
+                      type = "button"
+                      onClick = {() => openDeleteModal(item)}
+                    >
+                      삭제
+                    </TableActionButton>
+                  </TableActionRow>
+                </NoticeItemActions>
               </NoticeItem>
             ))
           )}
@@ -442,7 +476,7 @@ export default function AdminNoticesPage() {
               <div>
                 <ModalTitle>공지사항을 삭제하시겠습니까?</ModalTitle>
                 <ModalDescription>
-                  삭제한 공지사항은 목록에서 바로 사라지며 복구할 수 없습니다
+                  삭제한 공지사항은 목록에서 바로 사라지며 복구할 수 없습니다.
                 </ModalDescription>
               </div>
 
@@ -481,6 +515,12 @@ export default function AdminNoticesPage() {
                   <InfoValue>{selectedNotice.content}</InfoValue>
                 </InfoItem>
               </InfoGrid>
+
+              {editingId === selectedNotice.id && (
+                <ModalDescription>
+                  현재 수정 중인 공지사항을 삭제하면 입력 중이던 내용도 함께 초기화됩니다.
+                </ModalDescription>
+              )}
             </ModalBody>
 
             <ModalFooter>
