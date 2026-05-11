@@ -535,3 +535,89 @@ export const EmptyStateText = styled.p`
     color: #9ca3af;
   }
 `;
+
+export const SummaryRow = styled.div`
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
+
+  @media (max-width: 1024px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+`;
+
+export const SummaryCard = styled.div`
+  ${cardBase};
+  padding: 1rem 1.125rem;
+  border-radius: 0.875rem;
+`;
+
+export const SummaryLabel = styled.p`
+  margin: 0;
+  font-size: 0.8125rem;
+  color: #6b7280;
+
+  html.dark & {
+    color: #9ca3af;
+  }
+`;
+
+export const SummaryValue = styled.p`
+  margin: 0.375rem 0 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #111827;
+
+  html.dark & {
+    color: #ffffff;
+  }
+`;
+
+export const OptionList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+`;
+
+export const OptionButton = styled.button<{ $selected?: boolean }>`
+  width: 100%;
+  height: 3.25rem;
+  padding: 0 1rem;
+  border-radius: 0.875rem;
+  border: 1px solid
+    ${({ $selected, theme }) =>
+      $selected ? theme.colors.accent : '#e5e7eb'};
+  background: ${({ $selected }) =>
+    $selected ? 'rgba(37, 99, 235, 0.06)' : '#ffffff'};
+  color: #111827;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+
+  .option-icon {
+    width: 1rem;
+    height: 1rem;
+    color: ${({ theme }) => theme.colors.accent};
+  }
+
+  &:hover {
+    border-color: ${({ theme }) => theme.colors.accent};
+    background: rgba(37, 99, 235, 0.06);
+  }
+
+  html.dark & {
+    border-color: ${({ $selected, theme }) =>
+      $selected ? theme.colors.accent : '#262626'};
+    background: ${({ $selected }) =>
+      $selected ? 'rgba(37, 99, 235, 0.12)' : '#111827'};
+    color: #ffffff;
+
+    &:hover {
+      border-color: ${({ theme }) => theme.colors.accent};
+      background: rgba(37, 99, 235, 0.12);
+    }
+  }
+`;
