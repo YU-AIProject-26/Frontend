@@ -35,6 +35,7 @@ import {
   ProfileMenuList,
   ProfileMenuLink,
 } from './Header.styles';
+import { useAuth } from '../contexts/useAuth';
 
 type NotificationVariant = 'blue' | 'green' | 'purple' | 'orange' | 'gray';
 
@@ -77,51 +78,57 @@ function formatNotificationTime(date: Date) {
 }
 
 export default function Header() {
+  const { user, logout } = useAuth();
+
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
-  const [notifications, setNotifications] = useState<NotificationItemType[]>([
-    {
-      id: 1,
-      title: '회의 분석이 완료되었습니다',
-      description: '"주간 마케팅 회의" 분석 결과를 확인해보세요',
-      unread: true,
-      type: 'blue',
-      createdAt: new Date(Date.now() - 30 * 1000),
-    },
-    {
-      id: 2,
-      title: '새로운 Todo가 생성되었습니다',
-      description: '마케팅 자료 준비하기 외 2건이 추가되었습니다',
-      unread: true,
-      type: 'green',
-      createdAt: new Date(Date.now() - 15 * 60 * 1000),
-    },
-    {
-      id: 3,
-      title: '일정이 추가되었습니다',
-      description: '내일 오후 2:00 - 팀 미팅',
-      unread: true,
-      type: 'purple',
-      createdAt: new Date(Date.now() - 1 * 60 * 60 * 1000),
-    },
-    {
-      id: 4,
-      title: 'Todo 마감이 임박했습니다',
-      description: '"예산안 검토"가 오늘 마감입니다',
-      unread: false,
-      type: 'orange',
-      createdAt: new Date(Date.now() - 30 * 60 * 60 * 1000),
-    },
-    {
-      id: 5,
-      title: '회의 참여 요청',
-      description: '김철수님이 "Q1 결산 회의"에 초대했습니다',
-      unread: false,
-      type: 'gray',
-      createdAt: new Date(Date.now() - 55 * 60 * 60 * 1000),
-    },
-  ]);
+  const [notifications, setNotifications] = useState<NotificationItemType[]>(() => {
+    const now = Date.now();
+
+    return [
+      {
+        id: 1,
+        title: '회의 분석이 완료되었습니다',
+        description: '"주간 마케팅 회의" 분석 결과를 확인해보세요',
+        unread: true,
+        type: 'blue',
+        createdAt: new Date(now - 30 * 1000),
+      },
+      {
+        id: 2,
+        title: '새로운 Todo가 생성되었습니다',
+        description: '마케팅 자료 준비하기 외 2건이 추가되었습니다',
+        unread: true,
+        type: 'green',
+        createdAt: new Date(now - 15 * 60 * 1000),
+      },
+      {
+        id: 3,
+        title: '일정이 추가되었습니다',
+        description: '내일 오후 2:00 - 팀 미팅',
+        unread: true,
+        type: 'purple',
+        createdAt: new Date(now - 1 * 60 * 60 * 1000),
+      },
+      {
+        id: 4,
+        title: 'Todo 마감이 임박했습니다',
+        description: '"예산안 검토"가 오늘 마감입니다',
+        unread: false,
+        type: 'orange',
+        createdAt: new Date(now - 30 * 60 * 60 * 1000),
+      },
+      {
+        id: 5,
+        title: '회의 참여 요청',
+        description: '김철수님이 "Q1 결산 회의"에 초대했습니다',
+        unread: false,
+        type: 'gray',
+        createdAt: new Date(now - 55 * 60 * 60 * 1000),
+      },
+    ];
+  });
 
   const unreadCount = notifications.filter((item) => item.unread).length;
 
@@ -138,6 +145,11 @@ export default function Header() {
       }))
     );
     setIsNotificationOpen(false);
+  };
+
+  const handleLogout = () => {
+    logout();
+    closeAllDropdowns();
   };
 
   return (
@@ -187,8 +199,8 @@ export default function Header() {
                 <NotificationList>
                   {notifications.map((item) => (
                     <NotificationItem
-                      key={item.id}
-                      onClick={() => {
+                      key = {item.id}
+                      onClick = {() => {
                         setNotifications((prev) =>
                           prev.map((notification) =>
                             notification.id === item.id
@@ -199,7 +211,7 @@ export default function Header() {
                         setIsNotificationOpen(false);
                       }}
                     >
-                      <NotificationIconBox $variant={item.type}>
+                      <NotificationIconBox $variant = {item.type}>
                         {item.type === 'blue' && <Bell className = "notify-icon" />}
 
                         {item.type === 'green' && (
@@ -313,8 +325,8 @@ export default function Header() {
             {isProfileOpen && (
               <DropdownPanel $type = "profile">
                 <ProfileInfo>
-                  <ProfileName>홍길동</ProfileName>
-                  <ProfileEmail>hong@acta.com</ProfileEmail>
+                  <ProfileName>{user?.name ?? '사용자'}</ProfileName>
+                  <ProfileEmail>{user?.email ?? ''}</ProfileEmail>
                 </ProfileInfo>
 
                 <ProfileMenuList>
@@ -327,7 +339,7 @@ export default function Header() {
                   <ProfileMenuLink
                     to = "/landing"
                     $danger
-                    onClick = {closeAllDropdowns}
+                    onClick = {handleLogout}
                   >
                     로그아웃
                   </ProfileMenuLink>

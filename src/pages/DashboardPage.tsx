@@ -21,7 +21,6 @@ import {
   HeaderLeft,
   HeaderTitle,
   HeaderDescription,
-  HeaderButtonGroup,
   PrimaryActionButton,
   OutlineActionButton,
   EmptyCard,
@@ -48,6 +47,10 @@ import {
   MeetingMeta,
   MeetingSummary,
   MeetingActions,
+  MeetingMenuWrapper,
+  MeetingMenuButton,
+  MeetingMenu,
+  MeetingMenuItem,
   StatusBadge,
   TodoCalendarGrid,
   TodoListCard,
@@ -74,16 +77,36 @@ import {
   UpcomingEventTime,
 } from './DashboardPage.styles';
 
+type MeetingStatus = 'completed' | 'analyzing' | 'failed';
+
+type MeetingItem = {
+  id: number;
+  title: string;
+  date: string;
+  status: MeetingStatus;
+  summary: string;
+  duration: string;
+};
+
+type TodoItemType = {
+  id: number;
+  text: string;
+  assignee: string;
+  dueDate: string;
+  completed: boolean;
+};
+
 export default function DashboardPage() {
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [hasData] = useState(true);
+  const [openMenuId, setOpenMenuId] = useState<number | null>(null);
 
-  const recentMeetings = [
+  const [recentMeetings, setRecentMeetings] = useState<MeetingItem[]>([
     {
       id: 1,
       title: '주간 마케팅 전략 회의',
       date: '2026년 4월 7일 14:00',
-      status: 'completed' as const,
+      status: 'completed',
       summary: 'Q2 마케팅 캠페인 전략 수립 및 예산 논의',
       duration: '1시간 23분',
     },
@@ -91,7 +114,7 @@ export default function DashboardPage() {
       id: 2,
       title: '제품 로드맵 리뷰',
       date: '2026년 4월 6일 10:00',
-      status: 'analyzing' as const,
+      status: 'analyzing',
       summary: '분석 중...',
       duration: '2시간 15분',
     },
@@ -99,13 +122,13 @@ export default function DashboardPage() {
       id: 3,
       title: '고객 피드백 세션',
       date: '2026년 4월 5일 16:00',
-      status: 'completed' as const,
+      status: 'completed',
       summary: '주요 고객 요청사항 수집 및 우선순위 결정',
       duration: '45분',
     },
-  ];
+  ]);
 
-  const todos = [
+  const [todos, setTodos] = useState<TodoItemType[]>([
     {
       id: 1,
       text: '마케팅 캠페인 예산안 작성',
@@ -134,7 +157,7 @@ export default function DashboardPage() {
       dueDate: '4월 9일',
       completed: false,
     },
-  ];
+  ]);
 
   const upcomingEvents = [
     { date: '4월 8일', time: '10:00', title: '팀 스탠드업' },
@@ -142,7 +165,30 @@ export default function DashboardPage() {
     { date: '4월 12일', time: '15:00', title: '1:1 미팅' },
   ];
 
-  const getStatusBadge = (status: string) => {
+  const toggleTodoCompleted = (id: number) => {
+    setTodos((prev) =>
+      prev.map((todo) =>
+        todo.id === id
+          ? { ...todo, completed: !todo.completed }
+          : todo
+      )
+    );
+  };
+
+  const handleDeleteMeeting = (id: number) => {
+    setRecentMeetings((prev) => prev.filter((meeting) => meeting.id !== id));
+    setOpenMenuId(null);
+  };
+
+  const toggleMeetingMenu = (id: number) => {
+    setOpenMenuId((prev) => (prev === id ? null : id));
+  };
+
+  const closeMeetingMenu = () => {
+    setOpenMenuId(null);
+  };
+
+  const getStatusBadge = (status: MeetingStatus) => {
     switch (status) {
       case 'completed':
         return (
@@ -218,17 +264,6 @@ export default function DashboardPage() {
             회의 분석과 Todo를 한눈에 확인하세요
           </HeaderDescription>
         </HeaderLeft>
-
-        <HeaderButtonGroup>
-          <PrimaryActionButton type = "button">
-            <Mic className = "action-icon" />
-            녹음하기
-          </PrimaryActionButton>
-          <OutlineActionButton type = "button">
-            <Upload className = "action-icon" />
-            파일 업로드
-          </OutlineActionButton>
-        </HeaderButtonGroup>
       </HeaderSection>
 
       <StatsGrid>
@@ -238,7 +273,7 @@ export default function DashboardPage() {
             <FileText className = "stat-icon" />
           </StatHeader>
           <StatValue>24</StatValue>
-          <StatSubText $accent>+3 이번 주</StatSubText>
+          <StatSubText $accent = {true}>+3 이번 주</StatSubText>
         </StatCard>
 
         <StatCard>
@@ -256,7 +291,7 @@ export default function DashboardPage() {
             <CalendarDays className = "stat-icon" />
           </StatHeader>
           <StatValue>8</StatValue>
-          <StatSubText $accent>이번 주 3개</StatSubText>
+          <StatSubText $accent = {true}>이번 주 3개</StatSubText>
         </StatCard>
 
         <StatCard>
@@ -272,7 +307,7 @@ export default function DashboardPage() {
       <MainCard>
         <SectionHeader>
           <SectionTitle>최근 회의</SectionTitle>
-          <SectionLinkButton to="/dashboard/meetings">
+          <SectionLinkButton to = "/meetings">
             모두 보기
             <ArrowRight className = "link-arrow" />
           </SectionLinkButton>
@@ -280,32 +315,62 @@ export default function DashboardPage() {
 
         <MeetingsList>
           {recentMeetings.map((meeting) => (
-            <MeetingLink key = {meeting.id} to = {`/dashboard/meetings/${meeting.id}`}>
-              <MeetingCard>
-                <MeetingTop>
-                  <MeetingLeft>
+            <MeetingCard key = {meeting.id}>
+              <MeetingTop>
+                <MeetingLeft>
+                  <MeetingLink to = {`/meetings/${meeting.id}`}>
                     <MeetingTitle>{meeting.title}</MeetingTitle>
-                    <MeetingMeta>
-                      <span className = "meeting-meta-item">
-                        <Clock className = "meeting-meta-icon" />
-                        {meeting.date}
-                      </span>
-                      <span>•</span>
-                      <span>{meeting.duration}</span>
-                    </MeetingMeta>
-                  </MeetingLeft>
+                  </MeetingLink>
 
-                  <MeetingActions>
-                    {getStatusBadge(meeting.status)}
-                    <button type = "button" aria-label = "more">
+                  <MeetingMeta>
+                    <span className = "meeting-meta-item">
+                      <Clock className = "meeting-meta-icon" />
+                      {meeting.date}
+                    </span>
+                    <span>•</span>
+                    <span>{meeting.duration}</span>
+                  </MeetingMeta>
+                </MeetingLeft>
+
+                <MeetingActions>
+                  {getStatusBadge(meeting.status)}
+
+                  <MeetingMenuWrapper>
+                    <MeetingMenuButton
+                      type = "button"
+                      aria-label = "meeting-menu"
+                      onClick = {() => toggleMeetingMenu(meeting.id)}
+                    >
                       <MoreVertical className = "meeting-more-icon" />
-                    </button>
-                  </MeetingActions>
-                </MeetingTop>
+                    </MeetingMenuButton>
 
+                    {openMenuId === meeting.id && (
+                      <MeetingMenu>
+                        <MeetingMenuItem
+                          as = {Link}
+                          to = {`/meetings/${meeting.id}/edit`}
+                          onClick = {closeMeetingMenu}
+                        >
+                          수정하기
+                        </MeetingMenuItem>
+
+                        <MeetingMenuItem
+                          type = "button"
+                          $danger = {true}
+                          onClick = {() => handleDeleteMeeting(meeting.id)}
+                        >
+                          삭제하기
+                        </MeetingMenuItem>
+                      </MeetingMenu>
+                    )}
+                  </MeetingMenuWrapper>
+                </MeetingActions>
+              </MeetingTop>
+
+              <MeetingLink to = {`/meetings/${meeting.id}`}>
                 <MeetingSummary>{meeting.summary}</MeetingSummary>
-              </MeetingCard>
-            </MeetingLink>
+              </MeetingLink>
+            </MeetingCard>
           ))}
         </MeetingsList>
       </MainCard>
@@ -314,7 +379,7 @@ export default function DashboardPage() {
         <TodoListCard>
           <SectionHeader>
             <SectionTitle>오늘의 Todo</SectionTitle>
-            <SectionLinkButton to = "/dashboard/todo">
+            <SectionLinkButton to = "/todo">
               모두 보기
               <ArrowRight className = "link-arrow" />
             </SectionLinkButton>
@@ -323,7 +388,11 @@ export default function DashboardPage() {
           <TodoList>
             {todos.slice(0, 5).map((todo) => (
               <TodoItem key = {todo.id}>
-                <TodoCheck type = "checkbox" checked = {todo.completed} readOnly />
+                <TodoCheck
+                  type = "checkbox"
+                  checked = {todo.completed}
+                  onChange = {() => toggleTodoCompleted(todo.id)}
+                />
                 <TodoContent>
                   <TodoText $completed = {todo.completed}>{todo.text}</TodoText>
                   <TodoMetaRow>
@@ -340,7 +409,7 @@ export default function DashboardPage() {
         <CalendarSideCard>
           <CalendarSectionHeader>
             <SectionTitle>일정 캘린더</SectionTitle>
-            <SectionLinkButton to = "/dashboard/calendar">
+            <SectionLinkButton to = "/calendar">
               모두 보기
               <ArrowRight className = "link-arrow" />
             </SectionLinkButton>

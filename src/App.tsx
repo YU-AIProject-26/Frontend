@@ -18,21 +18,64 @@ import MyPage from './pages/MyPage';
 import SettingsPage from './pages/SettingsPage';
 import NotificationsPage from './pages/NotificationsPage';
 import MeetingCreatePage from './pages/MeetingCreatePage';
+import TodoPage from './pages/TodoPage';
+import { useAuth } from './contexts/useAuth';
 
 export default function App() {
+  const { isAuthenticated } = useAuth();
+
   return (
     <>
       <ScrollToTop />
 
       <Routes>
-        <Route path = "/" element = {<Navigate to = "/landing" replace />} />
-        <Route path = "/landing" element = {<LandingPage />} />
-        <Route path = "/onboarding" element = {<OnboardingPage />} />
+        <Route
+          path = "/"
+          element = {
+            <Navigate
+              to = {isAuthenticated ? '/dashboard' : '/landing'}
+              replace
+            />
+          }
+        />
+
+        <Route
+          path = "/landing"
+          element = {
+            isAuthenticated ? <Navigate to = "/dashboard" replace /> : <LandingPage />
+          }
+        />
+
+        <Route
+          path = "/onboarding"
+          element = {
+            isAuthenticated ? <Navigate to = "/dashboard" replace /> : <OnboardingPage />
+          }
+        />
 
         <Route element = {<AuthLayout />}>
-          <Route path = "/auth/login" element = {<LoginPage />} />
-          <Route path = "/auth/signup" element = {<SignupPage />} />
-          <Route path = "/auth/reset-password" element = {<PasswordResetPage />} />
+          <Route
+            path = "/auth/login"
+            element = {
+              isAuthenticated ? <Navigate to = "/dashboard" replace /> : <LoginPage />
+            }
+          />
+          <Route
+            path = "/auth/signup"
+            element = {
+              isAuthenticated ? <Navigate to = "/dashboard" replace /> : <SignupPage />
+            }
+          />
+          <Route
+            path = "/auth/reset-password"
+            element = {
+              isAuthenticated ? (
+                <Navigate to = "/dashboard" replace />
+              ) : (
+                <PasswordResetPage />
+              )
+            }
+          />
         </Route>
 
         <Route path = "/service" element = {<ServicePage />} />
@@ -40,12 +83,17 @@ export default function App() {
         <Route path = "/privacy" element = {<PrivacyPage />} />
         <Route path = "/terms" element = {<TermsPage />} />
 
-        <Route element = {<DashboardLayout />}>
+        <Route
+          element = {
+            isAuthenticated ? <DashboardLayout /> : <Navigate to = "/landing" replace />
+          }
+        >
           <Route path = "/dashboard" element = {<DashboardPage />} />
           <Route path = "/notifications" element = {<NotificationsPage />} />
           <Route path = "/my" element = {<MyPage />} />
           <Route path = "/settings" element = {<SettingsPage />} />
           <Route path = "/meetings/create" element = {<MeetingCreatePage />} />
+          <Route path = "/todo" element = {<TodoPage />} />
         </Route>
 
         <Route path = "/not-found" element = {<NotFoundPage />} />
