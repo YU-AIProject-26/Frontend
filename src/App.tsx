@@ -92,13 +92,7 @@ export default function App() {
           />
           <Route
             path = "/auth/reset-password"
-            element = {
-              isAuthenticated && hasCompletedOnboarding ? (
-                <Navigate to = "/dashboard" replace />
-              ) : (
-                <PasswordResetPage />
-              )
-            }
+            element = {<PasswordResetPage />}
           />
         </Route>
 
