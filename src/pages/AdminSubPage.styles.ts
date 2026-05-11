@@ -341,28 +341,35 @@ export const ModalDescription = styled.p`
 `;
 
 export const ModalCloseButton = styled.button`
-  width: 2.25rem;
-  height: 2.25rem;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
   border: none;
-  border-radius: 0.625rem;
+  border-radius: 9999px;
   background: transparent;
-  color: #6b7280;
+  color: #9ca3af;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
+  align-self: flex-start;
 
   .close-icon {
-    width: 1.125rem;
-    height: 1.125rem;
+    width: 1rem;
+    height: 1rem;
   }
 
   &:hover {
-    background: #f3f4f6;
+    background: rgba(15, 23, 42, 0.06);
+    color: #6b7280;
   }
 
   html.dark & {
     color: #9ca3af;
 
     &:hover {
-      background: #1f2937;
+      background: rgba(255, 255, 255, 0.08);
+      color: #ffffff;
     }
   }
 `;
