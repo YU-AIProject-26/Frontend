@@ -9,6 +9,7 @@ import {
   X,
   RotateCcw,
   Trash2,
+  Info,
 } from 'lucide-react';
 import {
   AdminSubPageWrapper,
@@ -51,6 +52,8 @@ import {
   ToolbarActions,
   ToolbarButton,
   ResultMeta,
+  WarningMessage,
+  InfoMessage,
 } from './AdminSubPage.styles';
 import AdminActionToast from '../components/AdminActionToast';
 
@@ -563,6 +566,13 @@ export default function AdminMeetingsPage() {
                   실패
                 </OptionButton>
               </OptionList>
+
+              {selectedMeeting.status === '실패' && (
+                <InfoMessage>
+                  <Info className = "info-icon" />
+                  <span>실패 상태의 회의를 다시 분석중 또는 분석 완료 상태로 바꾸면 운영 화면상 복구된 것처럼 보일 수 있습니다.</span>
+                </InfoMessage>
+              )}
             </ModalBody>
 
             <ModalFooter>
@@ -612,6 +622,18 @@ export default function AdminMeetingsPage() {
                   <InfoValue>{pendingStatus}</InfoValue>
                 </InfoItem>
               </InfoGrid>
+
+              {pendingStatus === '실패' ? (
+                <WarningMessage>
+                  <AlertTriangle className = "warning-icon" />
+                  <span>실패 상태로 변경하면 이 회의는 분석 오류가 있는 항목으로 보이게 됩니다.</span>
+                </WarningMessage>
+              ) : (
+                <InfoMessage>
+                  <Info className = "info-icon" />
+                  <span>상태 변경 후 관리자 목록과 요약 카드 통계에 바로 반영됩니다.</span>
+                </InfoMessage>
+              )}
             </ModalBody>
 
             <ModalFooter>
@@ -675,10 +697,17 @@ export default function AdminMeetingsPage() {
                 </InfoItem>
               </InfoGrid>
 
-              <ModalDescription>
-                <Trash2 className = "close-icon" />
-                삭제 후에는 회의 상세 내용과 연결된 작업 흐름을 다시 확인할 수 없습니다.
-              </ModalDescription>
+              <WarningMessage>
+                <Trash2 className = "warning-icon" />
+                <span>삭제 후에는 회의 상세 내용과 연결된 작업 흐름을 다시 확인할 수 없습니다.</span>
+              </WarningMessage>
+
+              {selectedMeeting.todos > 0 && (
+                <InfoMessage>
+                  <Info className = "info-icon" />
+                  <span>이 회의에는 생성된 Todo가 {selectedMeeting.todos}건 있어 운영 확인 시 함께 영향이 있을 수 있습니다.</span>
+                </InfoMessage>
+              )}
             </ModalBody>
 
             <ModalFooter>
