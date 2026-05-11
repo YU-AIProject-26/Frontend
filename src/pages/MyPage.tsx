@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
-  User,
   Mail,
   Shield,
   LogOut,
@@ -96,7 +95,7 @@ export default function MyPage() {
   const [isTwoFactorEnabled, setIsTwoFactorEnabled] = useState(false);
 
   const profile = {
-    name: user?.name ?? '사용자',
+    nickname: user?.name ?? '사용자',
     email: user?.email ?? '',
     joinDate: '2025년 12월 1일',
     plan: currentPlan === 'free' ? '무료 플랜' : 'Pro 플랜',
@@ -162,20 +161,15 @@ export default function MyPage() {
         <Card>
           <ProfileSection>
             <ProfileAvatar>
-              <span>{profile.name[0]}</span>
+              <span>{profile.nickname[0]}</span>
             </ProfileAvatar>
 
             <ProfileContent>
               <ProfileTop>
                 <ProfileInfo>
-                  <ProfileName>{profile.name}</ProfileName>
+                  <ProfileName>{profile.nickname}</ProfileName>
                   <ProfileEmail>{profile.email}</ProfileEmail>
                 </ProfileInfo>
-
-                <OutlineButton type = "button">
-                  <User className = "button-icon" />
-                  프로필 수정
-                </OutlineButton>
               </ProfileTop>
 
               <StatsRow>
@@ -207,8 +201,8 @@ export default function MyPage() {
           </SectionHeader>
 
           <FormGroup>
-            <Label htmlFor = "name">이름</Label>
-            <Input id = "name" defaultValue = {profile.name} />
+            <Label htmlFor = "nickname">닉네임</Label>
+            <Input id = "nickname" defaultValue = {profile.nickname} />
           </FormGroup>
 
           <FormGroup>
