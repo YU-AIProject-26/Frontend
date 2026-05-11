@@ -16,6 +16,7 @@ import OnboardingPage from './pages/OnboardingPage';
 import NotFoundPage from './pages/NotFoundPage';
 import MyPage from './pages/MyPage';
 import SettingsPage from './pages/SettingsPage';
+import NotificationsPage from './pages/NotificationsPage';
 
 export default function App() {
   return (
@@ -40,6 +41,7 @@ export default function App() {
 
         <Route element = {<DashboardLayout />}>
           <Route path = "/dashboard" element = {<DashboardPage />} />
+          <Route path = "/notifications" element = {<NotificationsPage />} />
           <Route path = "/my" element = {<MyPage />} />
           <Route path = "/settings" element = {<SettingsPage />} />
         </Route>
