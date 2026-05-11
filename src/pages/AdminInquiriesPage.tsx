@@ -129,6 +129,9 @@ export default function AdminInquiriesPage() {
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
 
+  const [pendingStatus, setPendingStatus] = useState<InquiryStatus | null>(null);
+  const [isStatusConfirmModalOpen, setIsStatusConfirmModalOpen] = useState(false);
+
   const [toast, setToast] = useState<{
     open: boolean;
     message: string;
@@ -182,6 +185,9 @@ export default function AdminInquiriesPage() {
     };
   }, [inquiries]);
 
+  const originalMemo = selectedInquiry?.memo ?? '';
+  const isMemoChanged = memoInput !== originalMemo;
+
   const showToast = (message: string, variant: 'success' | 'error' = 'success') => {
     setToast({
       open: true,
@@ -219,16 +225,31 @@ export default function AdminInquiriesPage() {
 
   const openStatusModal = (item: InquiryItem) => {
     setSelectedInquiry(item);
+    setPendingStatus(null);
     setIsStatusModalOpen(true);
   };
 
   const closeStatusModal = () => {
     setIsStatusModalOpen(false);
     setSelectedInquiry(null);
+    setPendingStatus(null);
+  };
+
+  const openStatusConfirmModal = (nextStatus: InquiryStatus) => {
+    if (!selectedInquiry) return;
+    if (selectedInquiry.status === nextStatus) return;
+
+    setPendingStatus(nextStatus);
+    setIsStatusConfirmModalOpen(true);
+  };
+
+  const closeStatusConfirmModal = () => {
+    setIsStatusConfirmModalOpen(false);
+    setPendingStatus(null);
   };
 
   const handleSaveMemo = () => {
-    if (!selectedInquiry) return;
+    if (!selectedInquiry || !isMemoChanged) return;
 
     setInquiries((prev) =>
       prev.map((item) =>
@@ -240,16 +261,17 @@ export default function AdminInquiriesPage() {
     closeDetailModal();
   };
 
-  const handleChangeStatus = (nextStatus: InquiryStatus) => {
-    if (!selectedInquiry) return;
+  const confirmStatusChange = () => {
+    if (!selectedInquiry || !pendingStatus) return;
 
     setInquiries((prev) =>
       prev.map((item) =>
-        item.id === selectedInquiry.id ? { ...item, status: nextStatus } : item
+        item.id === selectedInquiry.id ? { ...item, status: pendingStatus } : item
       )
     );
 
-    showToast(`${selectedInquiry.title} 항목의 상태가 ${nextStatus}로 변경되었습니다.`, 'success');
+    showToast(`${selectedInquiry.title} 항목의 상태가 ${pendingStatus}로 변경되었습니다.`, 'success');
+    closeStatusConfirmModal();
     closeStatusModal();
   };
 
@@ -506,7 +528,11 @@ export default function AdminInquiriesPage() {
                 취소
               </ModalSecondaryButton>
 
-              <ModalPrimaryButton type = "button" onClick = {handleSaveMemo}>
+              <ModalPrimaryButton
+                type = "button"
+                onClick = {handleSaveMemo}
+                disabled = {!isMemoChanged}
+              >
                 메모 저장
               </ModalPrimaryButton>
             </ModalFooter>
@@ -535,7 +561,8 @@ export default function AdminInquiriesPage() {
                 <OptionButton
                   type = "button"
                   $selected = {selectedInquiry.status === '대기'}
-                  onClick = {() => handleChangeStatus('대기')}
+                  disabled = {selectedInquiry.status === '대기'}
+                  onClick = {() => openStatusConfirmModal('대기')}
                 >
                   <Clock3 className = "option-icon" />
                   대기
@@ -544,7 +571,8 @@ export default function AdminInquiriesPage() {
                 <OptionButton
                   type = "button"
                   $selected = {selectedInquiry.status === '처리중'}
-                  onClick = {() => handleChangeStatus('처리중')}
+                  disabled = {selectedInquiry.status === '처리중'}
+                  onClick = {() => openStatusConfirmModal('처리중')}
                 >
                   <AlertTriangle className = "option-icon" />
                   처리중
@@ -553,7 +581,8 @@ export default function AdminInquiriesPage() {
                 <OptionButton
                   type = "button"
                   $selected = {selectedInquiry.status === '완료'}
-                  onClick = {() => handleChangeStatus('완료')}
+                  disabled = {selectedInquiry.status === '완료'}
+                  onClick = {() => openStatusConfirmModal('완료')}
                 >
                   <CheckCircle2 className = "option-icon" />
                   완료
@@ -565,6 +594,58 @@ export default function AdminInquiriesPage() {
               <ModalSecondaryButton type = "button" onClick = {closeStatusModal}>
                 취소
               </ModalSecondaryButton>
+            </ModalFooter>
+          </ModalCard>
+        </ModalOverlay>
+      )}
+
+      {isStatusConfirmModalOpen && selectedInquiry && pendingStatus && (
+        <ModalOverlay onClick = {closeStatusConfirmModal}>
+          <ModalCard onClick = {(e) => e.stopPropagation()}>
+            <ModalHeader>
+              <div>
+                <ModalTitle>상태를 변경하시겠습니까?</ModalTitle>
+                <ModalDescription>
+                  문의 처리 상태 변경은 운영 흐름과 응답 우선순위에 반영됩니다.
+                </ModalDescription>
+              </div>
+
+              <ModalCloseButton type = "button" onClick = {closeStatusConfirmModal}>
+                <X className = "close-icon" />
+              </ModalCloseButton>
+            </ModalHeader>
+
+            <ModalBody>
+              <InfoGrid>
+                <InfoItem>
+                  <InfoLabel>문의 제목</InfoLabel>
+                  <InfoValue>{selectedInquiry.title}</InfoValue>
+                </InfoItem>
+
+                <InfoItem>
+                  <InfoLabel>작성자</InfoLabel>
+                  <InfoValue>{selectedInquiry.author}</InfoValue>
+                </InfoItem>
+
+                <InfoItem>
+                  <InfoLabel>현재 상태</InfoLabel>
+                  <InfoValue>{selectedInquiry.status}</InfoValue>
+                </InfoItem>
+
+                <InfoItem>
+                  <InfoLabel>변경 상태</InfoLabel>
+                  <InfoValue>{pendingStatus}</InfoValue>
+                </InfoItem>
+              </InfoGrid>
+            </ModalBody>
+
+            <ModalFooter>
+              <ModalSecondaryButton type = "button" onClick = {closeStatusConfirmModal}>
+                취소
+              </ModalSecondaryButton>
+              <ModalPrimaryButton type = "button" onClick = {confirmStatusChange}>
+                변경하기
+              </ModalPrimaryButton>
             </ModalFooter>
           </ModalCard>
         </ModalOverlay>

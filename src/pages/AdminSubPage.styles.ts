@@ -388,7 +388,12 @@ export const ModalPrimaryButton = styled.button`
   font-size: 0.875rem;
   font-weight: 600;
 
-  &:hover {
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  &:hover:not(:disabled) {
     background: color-mix(
       in srgb,
       ${({ theme }) => theme.colors.accent} 90%,
