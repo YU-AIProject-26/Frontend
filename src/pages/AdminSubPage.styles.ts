@@ -492,9 +492,14 @@ export const RoleOptionButton = styled.button<{ $selected?: boolean }>`
     color: ${({ theme }) => theme.colors.accent};
   }
 
-  &:hover {
+  &:hover:not(:disabled) {
     border-color: ${({ theme }) => theme.colors.accent};
     background: rgba(37, 99, 235, 0.06);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 
   html.dark & {
@@ -504,7 +509,7 @@ export const RoleOptionButton = styled.button<{ $selected?: boolean }>`
       $selected ? 'rgba(37, 99, 235, 0.12)' : '#111827'};
     color: #ffffff;
 
-    &:hover {
+    &:hover:not(:disabled) {
       border-color: ${({ theme }) => theme.colors.accent};
       background: rgba(37, 99, 235, 0.12);
     }
@@ -708,7 +713,12 @@ export const FormPrimaryButton = styled.button`
   font-size: 0.875rem;
   font-weight: 600;
 
-  &:hover {
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  &:hover:not(:disabled) {
     background: color-mix(
       in srgb,
       ${({ theme }) => theme.colors.accent} 90%,
@@ -727,7 +737,12 @@ export const FormSecondaryButton = styled.button`
   font-size: 0.875rem;
   font-weight: 500;
 
-  &:hover {
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  &:hover:not(:disabled) {
     background: #f9fafb;
   }
 
@@ -736,7 +751,7 @@ export const FormSecondaryButton = styled.button`
     background: #111827;
     color: #ffffff;
 
-    &:hover {
+    &:hover:not(:disabled) {
       background: #0a0a0a;
     }
   }
@@ -759,7 +774,7 @@ export const NoticeListTitle = styled.h2`
   }
 `;
 
-export const NoticeItem = styled.div`
+export const NoticeItem = styled.div<{ $active?: boolean }>`
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -767,9 +782,18 @@ export const NoticeItem = styled.div`
   padding: 1rem 0;
   border-bottom: 1px solid #f3f4f6;
 
+  ${({ $active, theme }) =>
+    $active &&
+    `
+      border-radius: 0.875rem;
+      padding: 1rem;
+      margin: 0 -0.25rem;
+      border: 1px solid ${theme.colors.accent};
+      background: rgba(37, 99, 235, 0.04);
+    `}
+
   &:last-child {
     border-bottom: none;
-    padding-bottom: 0;
   }
 
   html.dark & {

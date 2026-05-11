@@ -1,5 +1,14 @@
 import { useMemo, useState } from 'react';
-import { Search, ChevronRight, Shield, UserX, CheckCircle2, Users, X, RotateCcw } from 'lucide-react';
+import {
+  Search,
+  ChevronRight,
+  Shield,
+  UserX,
+  CheckCircle2,
+  Users,
+  X,
+  RotateCcw,
+} from 'lucide-react';
 import {
   AdminSubPageWrapper,
   SubPageHeader,
@@ -24,6 +33,7 @@ import {
   ModalCloseButton,
   ModalBody,
   ModalFooter,
+  ModalPrimaryButton,
   ModalSecondaryButton,
   InfoGrid,
   InfoItem,
@@ -129,6 +139,11 @@ export default function AdminUsersPage() {
   const [isRoleModalOpen, setIsRoleModalOpen] = useState(false);
   const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
 
+  const [pendingRole, setPendingRole] = useState<UserRole | null>(null);
+  const [pendingStatus, setPendingStatus] = useState<UserStatus | null>(null);
+  const [isRoleConfirmModalOpen, setIsRoleConfirmModalOpen] = useState(false);
+  const [isStatusConfirmModalOpen, setIsStatusConfirmModalOpen] = useState(false);
+
   const [toast, setToast] = useState<{
     open: boolean;
     message: string;
@@ -215,26 +230,34 @@ export default function AdminUsersPage() {
 
   const openRoleModal = (target: UserItem) => {
     setSelectedUser(target);
+    setPendingRole(null);
     setIsRoleModalOpen(true);
   };
 
   const closeRoleModal = () => {
     setIsRoleModalOpen(false);
     setSelectedUser(null);
+    setPendingRole(null);
   };
 
   const openStatusModal = (target: UserItem) => {
     setSelectedUser(target);
+    setPendingStatus(null);
     setIsStatusModalOpen(true);
   };
 
   const closeStatusModal = () => {
     setIsStatusModalOpen(false);
     setSelectedUser(null);
+    setPendingStatus(null);
   };
 
-  const handleChangeRole = (nextRole: UserRole) => {
+  const openRoleConfirmModal = (nextRole: UserRole) => {
     if (!selectedUser) return;
+
+    if (selectedUser.role === nextRole) {
+      return;
+    }
 
     if (selectedUser.email === user?.email && nextRole !== 'admin') {
       showToast('현재 로그인한 관리자 자신의 권한은 일반 사용자로 변경할 수 없습니다.', 'error');
@@ -242,23 +265,41 @@ export default function AdminUsersPage() {
       return;
     }
 
+    setPendingRole(nextRole);
+    setIsRoleConfirmModalOpen(true);
+  };
+
+  const closeRoleConfirmModal = () => {
+    setIsRoleConfirmModalOpen(false);
+    setPendingRole(null);
+  };
+
+  const confirmRoleChange = () => {
+    if (!selectedUser || !pendingRole) return;
+
     setUsers((prev) =>
       prev.map((target) =>
-        target.id === selectedUser.id ? { ...target, role: nextRole } : target
+        target.id === selectedUser.id ? { ...target, role: pendingRole } : target
       )
     );
 
     showToast(
       `${selectedUser.nickname} 계정의 권한이 ${
-        nextRole === 'admin' ? '관리자' : '일반 사용자'
+        pendingRole === 'admin' ? '관리자' : '일반 사용자'
       }로 변경되었습니다.`,
       'success'
     );
+
+    closeRoleConfirmModal();
     closeRoleModal();
   };
 
-  const handleChangeStatus = (nextStatus: UserStatus) => {
+  const openStatusConfirmModal = (nextStatus: UserStatus) => {
     if (!selectedUser) return;
+
+    if (selectedUser.status === nextStatus) {
+      return;
+    }
 
     if (selectedUser.email === user?.email && nextStatus === '정지') {
       showToast('현재 로그인한 관리자 자신의 계정은 정지할 수 없습니다.', 'error');
@@ -266,13 +307,27 @@ export default function AdminUsersPage() {
       return;
     }
 
+    setPendingStatus(nextStatus);
+    setIsStatusConfirmModalOpen(true);
+  };
+
+  const closeStatusConfirmModal = () => {
+    setIsStatusConfirmModalOpen(false);
+    setPendingStatus(null);
+  };
+
+  const confirmStatusChange = () => {
+    if (!selectedUser || !pendingStatus) return;
+
     setUsers((prev) =>
       prev.map((target) =>
-        target.id === selectedUser.id ? { ...target, status: nextStatus } : target
+        target.id === selectedUser.id ? { ...target, status: pendingStatus } : target
       )
     );
 
-    showToast(`${selectedUser.nickname} 계정의 상태가 ${nextStatus}로 변경되었습니다.`, 'success');
+    showToast(`${selectedUser.nickname} 계정의 상태가 ${pendingStatus}로 변경되었습니다.`, 'success');
+
+    closeStatusConfirmModal();
     closeStatusModal();
   };
 
@@ -543,7 +598,8 @@ export default function AdminUsersPage() {
                 <RoleOptionButton
                   type = "button"
                   $selected = {selectedUser.role === 'user'}
-                  onClick = {() => handleChangeRole('user')}
+                  disabled = {selectedUser.role === 'user'}
+                  onClick = {() => openRoleConfirmModal('user')}
                 >
                   <Users className = "role-icon" />
                   일반 사용자
@@ -552,7 +608,8 @@ export default function AdminUsersPage() {
                 <RoleOptionButton
                   type = "button"
                   $selected = {selectedUser.role === 'admin'}
-                  onClick = {() => handleChangeRole('admin')}
+                  disabled = {selectedUser.role === 'admin'}
+                  onClick = {() => openRoleConfirmModal('admin')}
                 >
                   <Shield className = "role-icon" />
                   관리자
@@ -570,6 +627,62 @@ export default function AdminUsersPage() {
               <ModalSecondaryButton type = "button" onClick = {closeRoleModal}>
                 취소
               </ModalSecondaryButton>
+            </ModalFooter>
+          </ModalCard>
+        </ModalOverlay>
+      )}
+
+      {isRoleConfirmModalOpen && selectedUser && pendingRole && (
+        <ModalOverlay onClick = {closeRoleConfirmModal}>
+          <ModalCard onClick = {(e) => e.stopPropagation()}>
+            <ModalHeader>
+              <div>
+                <ModalTitle>권한을 변경하시겠습니까?</ModalTitle>
+                <ModalDescription>
+                  회원 권한 변경은 운영 범위에 직접 영향을 줄 수 있습니다.
+                </ModalDescription>
+              </div>
+
+              <ModalCloseButton type = "button" onClick = {closeRoleConfirmModal}>
+                <X className = "close-icon" />
+              </ModalCloseButton>
+            </ModalHeader>
+
+            <ModalBody>
+              <InfoGrid>
+                <InfoItem>
+                  <InfoLabel>대상 회원</InfoLabel>
+                  <InfoValue>{selectedUser.nickname}</InfoValue>
+                </InfoItem>
+
+                <InfoItem>
+                  <InfoLabel>이메일</InfoLabel>
+                  <InfoValue>{selectedUser.email}</InfoValue>
+                </InfoItem>
+
+                <InfoItem>
+                  <InfoLabel>현재 권한</InfoLabel>
+                  <InfoValue>
+                    {selectedUser.role === 'admin' ? '관리자' : '일반 사용자'}
+                  </InfoValue>
+                </InfoItem>
+
+                <InfoItem>
+                  <InfoLabel>변경 권한</InfoLabel>
+                  <InfoValue>
+                    {pendingRole === 'admin' ? '관리자' : '일반 사용자'}
+                  </InfoValue>
+                </InfoItem>
+              </InfoGrid>
+            </ModalBody>
+
+            <ModalFooter>
+              <ModalSecondaryButton type = "button" onClick = {closeRoleConfirmModal}>
+                취소
+              </ModalSecondaryButton>
+              <ModalPrimaryButton type = "button" onClick = {confirmRoleChange}>
+                변경하기
+              </ModalPrimaryButton>
             </ModalFooter>
           </ModalCard>
         </ModalOverlay>
@@ -596,7 +709,8 @@ export default function AdminUsersPage() {
                 <RoleOptionButton
                   type = "button"
                   $selected = {selectedUser.status === '활성'}
-                  onClick = {() => handleChangeStatus('활성')}
+                  disabled = {selectedUser.status === '활성'}
+                  onClick = {() => openStatusConfirmModal('활성')}
                 >
                   <CheckCircle2 className = "role-icon" />
                   활성
@@ -605,7 +719,8 @@ export default function AdminUsersPage() {
                 <RoleOptionButton
                   type = "button"
                   $selected = {selectedUser.status === '대기'}
-                  onClick = {() => handleChangeStatus('대기')}
+                  disabled = {selectedUser.status === '대기'}
+                  onClick = {() => openStatusConfirmModal('대기')}
                 >
                   <Shield className = "role-icon" />
                   대기
@@ -614,7 +729,8 @@ export default function AdminUsersPage() {
                 <RoleOptionButton
                   type = "button"
                   $selected = {selectedUser.status === '정지'}
-                  onClick = {() => handleChangeStatus('정지')}
+                  disabled = {selectedUser.status === '정지'}
+                  onClick = {() => openStatusConfirmModal('정지')}
                 >
                   <UserX className = "role-icon" />
                   정지
@@ -632,6 +748,58 @@ export default function AdminUsersPage() {
               <ModalSecondaryButton type = "button" onClick = {closeStatusModal}>
                 취소
               </ModalSecondaryButton>
+            </ModalFooter>
+          </ModalCard>
+        </ModalOverlay>
+      )}
+
+      {isStatusConfirmModalOpen && selectedUser && pendingStatus && (
+        <ModalOverlay onClick = {closeStatusConfirmModal}>
+          <ModalCard onClick = {(e) => e.stopPropagation()}>
+            <ModalHeader>
+              <div>
+                <ModalTitle>상태를 변경하시겠습니까?</ModalTitle>
+                <ModalDescription>
+                  회원 상태 변경은 계정 사용 가능 여부에 영향을 줍니다.
+                </ModalDescription>
+              </div>
+
+              <ModalCloseButton type = "button" onClick = {closeStatusConfirmModal}>
+                <X className = "close-icon" />
+              </ModalCloseButton>
+            </ModalHeader>
+
+            <ModalBody>
+              <InfoGrid>
+                <InfoItem>
+                  <InfoLabel>대상 회원</InfoLabel>
+                  <InfoValue>{selectedUser.nickname}</InfoValue>
+                </InfoItem>
+
+                <InfoItem>
+                  <InfoLabel>이메일</InfoLabel>
+                  <InfoValue>{selectedUser.email}</InfoValue>
+                </InfoItem>
+
+                <InfoItem>
+                  <InfoLabel>현재 상태</InfoLabel>
+                  <InfoValue>{selectedUser.status}</InfoValue>
+                </InfoItem>
+
+                <InfoItem>
+                  <InfoLabel>변경 상태</InfoLabel>
+                  <InfoValue>{pendingStatus}</InfoValue>
+                </InfoItem>
+              </InfoGrid>
+            </ModalBody>
+
+            <ModalFooter>
+              <ModalSecondaryButton type = "button" onClick = {closeStatusConfirmModal}>
+                취소
+              </ModalSecondaryButton>
+              <ModalPrimaryButton type = "button" onClick = {confirmStatusChange}>
+                변경하기
+              </ModalPrimaryButton>
             </ModalFooter>
           </ModalCard>
         </ModalOverlay>
