@@ -22,7 +22,7 @@ import TodoPage from './pages/TodoPage';
 import { useAuth } from './contexts/useAuth';
 
 export default function App() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, hasCompletedOnboarding } = useAuth();
 
   return (
     <>
@@ -33,7 +33,13 @@ export default function App() {
           path = "/"
           element = {
             <Navigate
-              to = {isAuthenticated ? '/dashboard' : '/landing'}
+              to = {
+                !isAuthenticated
+                  ? '/landing'
+                  : hasCompletedOnboarding
+                  ? '/dashboard'
+                  : '/onboarding'
+              }
               replace
             />
           }
@@ -42,14 +48,24 @@ export default function App() {
         <Route
           path = "/landing"
           element = {
-            isAuthenticated ? <Navigate to = "/dashboard" replace /> : <LandingPage />
+            isAuthenticated && hasCompletedOnboarding ? (
+              <Navigate to = "/dashboard" replace />
+            ) : (
+              <LandingPage />
+            )
           }
         />
 
         <Route
           path = "/onboarding"
           element = {
-            isAuthenticated ? <Navigate to = "/dashboard" replace /> : <OnboardingPage />
+            !isAuthenticated ? (
+              <Navigate to = "/landing" replace />
+            ) : hasCompletedOnboarding ? (
+              <Navigate to = "/dashboard" replace />
+            ) : (
+              <OnboardingPage />
+            )
           }
         />
 
@@ -57,24 +73,26 @@ export default function App() {
           <Route
             path = "/auth/login"
             element = {
-              isAuthenticated ? <Navigate to = "/dashboard" replace /> : <LoginPage />
+              isAuthenticated && hasCompletedOnboarding ? (
+                <Navigate to = "/dashboard" replace />
+              ) : (
+                <LoginPage />
+              )
             }
           />
           <Route
             path = "/auth/signup"
             element = {
-              isAuthenticated ? <Navigate to = "/dashboard" replace /> : <SignupPage />
+              isAuthenticated && hasCompletedOnboarding ? (
+                <Navigate to = "/dashboard" replace />
+              ) : (
+                <SignupPage />
+              )
             }
           />
           <Route
             path = "/auth/reset-password"
-            element = {
-              isAuthenticated ? (
-                <Navigate to = "/dashboard" replace />
-              ) : (
-                <PasswordResetPage />
-              )
-            }
+            element = {<PasswordResetPage />}
           />
         </Route>
 
@@ -85,7 +103,13 @@ export default function App() {
 
         <Route
           element = {
-            isAuthenticated ? <DashboardLayout /> : <Navigate to = "/landing" replace />
+            !isAuthenticated ? (
+              <Navigate to = "/landing" replace />
+            ) : !hasCompletedOnboarding ? (
+              <Navigate to = "/onboarding" replace />
+            ) : (
+              <DashboardLayout />
+            )
           }
         >
           <Route path = "/dashboard" element = {<DashboardPage />} />

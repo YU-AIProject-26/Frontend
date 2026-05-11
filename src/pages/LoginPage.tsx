@@ -28,7 +28,7 @@ import { useAuth } from '../contexts/useAuth';
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, hasCompletedOnboarding } = useAuth();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -46,7 +46,7 @@ export default function LoginPage() {
       return;
     }
 
-    navigate('/dashboard');
+    navigate(hasCompletedOnboarding ? '/dashboard' : '/onboarding');
   };
 
   return (

@@ -186,6 +186,23 @@ export const StatCard = styled.div`
   ${cardBase};
   padding: 1.5rem;
   border-radius: 0.75rem;
+  cursor: pointer;
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease,
+    box-shadow 0.2s ease;
+
+  &:hover {
+    border-color: rgba(37, 99, 235, 0.35);
+    box-shadow: 0 8px 20px rgba(37, 99, 235, 0.06);
+  }
+
+  html.dark & {
+    &:hover {
+      border-color: rgba(59, 130, 246, 0.35);
+      box-shadow: 0 8px 20px rgba(59, 130, 246, 0.08);
+    }
+  }
 `;
 
 export const StatHeader = styled.div`

@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import {
   Mic,
   Upload,
@@ -100,6 +100,17 @@ export default function DashboardPage() {
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [hasData] = useState(true);
   const [openMenuId, setOpenMenuId] = useState<number | null>(null);
+
+  const meetingsSectionRef = useRef<HTMLDivElement | null>(null);
+  const todoSectionRef = useRef<HTMLDivElement | null>(null);
+  const calendarSectionRef = useRef<HTMLDivElement | null>(null);
+
+  const scrollToSection = (ref: React.RefObject<HTMLDivElement | null>) => {
+    ref.current?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start',
+    });
+  };
 
   const [recentMeetings, setRecentMeetings] = useState<MeetingItem[]>([
     {
@@ -267,7 +278,7 @@ export default function DashboardPage() {
       </HeaderSection>
 
       <StatsGrid>
-        <StatCard>
+        <StatCard onClick = {() => scrollToSection(meetingsSectionRef)}>
           <StatHeader>
             <StatLabel>전체 회의</StatLabel>
             <FileText className = "stat-icon" />
@@ -276,7 +287,7 @@ export default function DashboardPage() {
           <StatSubText $accent = {true}>+3 이번 주</StatSubText>
         </StatCard>
 
-        <StatCard>
+        <StatCard onClick = {() => scrollToSection(todoSectionRef)}>
           <StatHeader>
             <StatLabel>완료된 Todo</StatLabel>
             <CheckCircle2 className = "stat-icon" />
@@ -285,7 +296,7 @@ export default function DashboardPage() {
           <StatSubText>진행중 18개</StatSubText>
         </StatCard>
 
-        <StatCard>
+        <StatCard onClick = {() => scrollToSection(calendarSectionRef)}>
           <StatHeader>
             <StatLabel>예정된 일정</StatLabel>
             <CalendarDays className = "stat-icon" />
@@ -294,7 +305,7 @@ export default function DashboardPage() {
           <StatSubText $accent = {true}>이번 주 3개</StatSubText>
         </StatCard>
 
-        <StatCard>
+        <StatCard onClick = {() => scrollToSection(meetingsSectionRef)}>
           <StatHeader>
             <StatLabel>총 회의 시간</StatLabel>
             <Clock className = "stat-icon" />
@@ -304,7 +315,7 @@ export default function DashboardPage() {
         </StatCard>
       </StatsGrid>
 
-      <MainCard>
+      <MainCard ref = {meetingsSectionRef}>
         <SectionHeader>
           <SectionTitle>최근 회의</SectionTitle>
           <SectionLinkButton to = "/meetings">
@@ -376,7 +387,7 @@ export default function DashboardPage() {
       </MainCard>
 
       <TodoCalendarGrid>
-        <TodoListCard>
+        <TodoListCard ref = {todoSectionRef}>
           <SectionHeader>
             <SectionTitle>오늘의 Todo</SectionTitle>
             <SectionLinkButton to = "/todo">
@@ -406,7 +417,7 @@ export default function DashboardPage() {
           </TodoList>
         </TodoListCard>
 
-        <CalendarSideCard>
+        <CalendarSideCard ref = {calendarSectionRef}>
           <CalendarSectionHeader>
             <SectionTitle>일정 캘린더</SectionTitle>
             <SectionLinkButton to = "/calendar">

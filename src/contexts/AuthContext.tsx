@@ -1,6 +1,10 @@
 import { useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
-import { AUTH_STORAGE_KEY, TEMP_USER } from '../auth/tempAuth';
+import {
+  AUTH_STORAGE_KEY,
+  ONBOARDING_STORAGE_KEY,
+  TEMP_USER,
+} from '../auth/tempAuth';
 import { AuthContext } from './AuthContextObject';
 
 type AuthUser = {
@@ -29,6 +33,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
       localStorage.removeItem(AUTH_STORAGE_KEY);
       return null;
     }
+  });
+
+  const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(() => {
+    return localStorage.getItem(ONBOARDING_STORAGE_KEY) === 'true';
   });
 
   const login = ({ email, password }: LoginPayload) => {
@@ -63,14 +71,27 @@ export function AuthProvider({ children }: AuthProviderProps) {
     localStorage.removeItem(AUTH_STORAGE_KEY);
   };
 
+  const completeOnboarding = () => {
+    setHasCompletedOnboarding(true);
+    localStorage.setItem(ONBOARDING_STORAGE_KEY, 'true');
+  };
+
+  const resetOnboarding = () => {
+    setHasCompletedOnboarding(false);
+    localStorage.removeItem(ONBOARDING_STORAGE_KEY);
+  };
+
   const value = useMemo(
     () => ({
       isAuthenticated: !!user,
       user,
       login,
       logout,
+      hasCompletedOnboarding,
+      completeOnboarding,
+      resetOnboarding,
     }),
-    [user]
+    [user, hasCompletedOnboarding]
   );
 
   return <AuthContext.Provider value = {value}>{children}</AuthContext.Provider>;
