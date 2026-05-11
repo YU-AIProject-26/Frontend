@@ -312,7 +312,7 @@ export default function DashboardPage() {
         <TodoListCard>
           <SectionHeader>
             <SectionTitle>오늘의 Todo</SectionTitle>
-            <SectionLinkButton to = "/dashboard/todo">
+            <SectionLinkButton to = "/todo">
               모두 보기
               <ArrowRight className = "link-arrow" />
             </SectionLinkButton>
