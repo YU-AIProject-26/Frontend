@@ -8,6 +8,7 @@ import {
   AlertTriangle,
   X,
   RotateCcw,
+  Trash2,
 } from 'lucide-react';
 import {
   AdminSubPageWrapper,
@@ -133,6 +134,9 @@ export default function AdminMeetingsPage() {
   const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
+  const [pendingStatus, setPendingStatus] = useState<MeetingStatus | null>(null);
+  const [isStatusConfirmModalOpen, setIsStatusConfirmModalOpen] = useState(false);
+
   const [toast, setToast] = useState<{
     open: boolean;
     message: string;
@@ -219,12 +223,14 @@ export default function AdminMeetingsPage() {
 
   const openStatusModal = (meeting: MeetingItem) => {
     setSelectedMeeting(meeting);
+    setPendingStatus(null);
     setIsStatusModalOpen(true);
   };
 
   const closeStatusModal = () => {
     setIsStatusModalOpen(false);
     setSelectedMeeting(null);
+    setPendingStatus(null);
   };
 
   const openDeleteModal = (meeting: MeetingItem) => {
@@ -237,18 +243,32 @@ export default function AdminMeetingsPage() {
     setSelectedMeeting(null);
   };
 
-  const handleChangeStatus = (nextStatus: MeetingStatus) => {
+  const openStatusConfirmModal = (nextStatus: MeetingStatus) => {
     if (!selectedMeeting) return;
+    if (selectedMeeting.status === nextStatus) return;
+
+    setPendingStatus(nextStatus);
+    setIsStatusConfirmModalOpen(true);
+  };
+
+  const closeStatusConfirmModal = () => {
+    setIsStatusConfirmModalOpen(false);
+    setPendingStatus(null);
+  };
+
+  const confirmStatusChange = () => {
+    if (!selectedMeeting || !pendingStatus) return;
 
     setMeetings((prev) =>
       prev.map((meeting) =>
         meeting.id === selectedMeeting.id
-          ? { ...meeting, status: nextStatus }
+          ? { ...meeting, status: pendingStatus }
           : meeting
       )
     );
 
-    showToast(`${selectedMeeting.title} 회의의 상태가 ${nextStatus}로 변경되었습니다.`, 'success');
+    showToast(`${selectedMeeting.title} 회의의 상태가 ${pendingStatus}로 변경되었습니다.`, 'success');
+    closeStatusConfirmModal();
     closeStatusModal();
   };
 
@@ -516,7 +536,8 @@ export default function AdminMeetingsPage() {
                 <OptionButton
                   type = "button"
                   $selected = {selectedMeeting.status === '분석 완료'}
-                  onClick = {() => handleChangeStatus('분석 완료')}
+                  disabled = {selectedMeeting.status === '분석 완료'}
+                  onClick = {() => openStatusConfirmModal('분석 완료')}
                 >
                   <CheckCircle2 className = "option-icon" />
                   분석 완료
@@ -525,7 +546,8 @@ export default function AdminMeetingsPage() {
                 <OptionButton
                   type = "button"
                   $selected = {selectedMeeting.status === '분석중'}
-                  onClick = {() => handleChangeStatus('분석중')}
+                  disabled = {selectedMeeting.status === '분석중'}
+                  onClick = {() => openStatusConfirmModal('분석중')}
                 >
                   <RefreshCw className = "option-icon" />
                   분석중
@@ -534,7 +556,8 @@ export default function AdminMeetingsPage() {
                 <OptionButton
                   type = "button"
                   $selected = {selectedMeeting.status === '실패'}
-                  onClick = {() => handleChangeStatus('실패')}
+                  disabled = {selectedMeeting.status === '실패'}
+                  onClick = {() => openStatusConfirmModal('실패')}
                 >
                   <AlertTriangle className = "option-icon" />
                   실패
@@ -551,6 +574,58 @@ export default function AdminMeetingsPage() {
         </ModalOverlay>
       )}
 
+      {isStatusConfirmModalOpen && selectedMeeting && pendingStatus && (
+        <ModalOverlay onClick = {closeStatusConfirmModal}>
+          <ModalCard onClick = {(e) => e.stopPropagation()}>
+            <ModalHeader>
+              <div>
+                <ModalTitle>상태를 변경하시겠습니까?</ModalTitle>
+                <ModalDescription>
+                  회의 분석 상태 변경은 운영 상태 표시에 직접 반영됩니다.
+                </ModalDescription>
+              </div>
+
+              <ModalCloseButton type = "button" onClick = {closeStatusConfirmModal}>
+                <X className = "close-icon" />
+              </ModalCloseButton>
+            </ModalHeader>
+
+            <ModalBody>
+              <InfoGrid>
+                <InfoItem>
+                  <InfoLabel>회의 제목</InfoLabel>
+                  <InfoValue>{selectedMeeting.title}</InfoValue>
+                </InfoItem>
+
+                <InfoItem>
+                  <InfoLabel>생성자</InfoLabel>
+                  <InfoValue>{selectedMeeting.owner}</InfoValue>
+                </InfoItem>
+
+                <InfoItem>
+                  <InfoLabel>현재 상태</InfoLabel>
+                  <InfoValue>{selectedMeeting.status}</InfoValue>
+                </InfoItem>
+
+                <InfoItem>
+                  <InfoLabel>변경 상태</InfoLabel>
+                  <InfoValue>{pendingStatus}</InfoValue>
+                </InfoItem>
+              </InfoGrid>
+            </ModalBody>
+
+            <ModalFooter>
+              <ModalSecondaryButton type = "button" onClick = {closeStatusConfirmModal}>
+                취소
+              </ModalSecondaryButton>
+              <ModalPrimaryButton type = "button" onClick = {confirmStatusChange}>
+                변경하기
+              </ModalPrimaryButton>
+            </ModalFooter>
+          </ModalCard>
+        </ModalOverlay>
+      )}
+
       {isDeleteModalOpen && selectedMeeting && (
         <ModalOverlay onClick = {closeDeleteModal}>
           <ModalCard onClick = {(e) => e.stopPropagation()}>
@@ -558,7 +633,7 @@ export default function AdminMeetingsPage() {
               <div>
                 <ModalTitle>회의를 삭제하시겠습니까?</ModalTitle>
                 <ModalDescription>
-                  삭제한 회의는 프론트 목록에서 바로 사라지며 복구할 수 없습니다
+                  삭제한 회의는 목록에서 바로 사라지며 복구할 수 없습니다.
                 </ModalDescription>
               </div>
 
@@ -588,7 +663,22 @@ export default function AdminMeetingsPage() {
                   <InfoLabel>분석 상태</InfoLabel>
                   <InfoValue>{selectedMeeting.status}</InfoValue>
                 </InfoItem>
+
+                <InfoItem>
+                  <InfoLabel>참여 인원</InfoLabel>
+                  <InfoValue>{selectedMeeting.participants}명</InfoValue>
+                </InfoItem>
+
+                <InfoItem>
+                  <InfoLabel>Todo 수</InfoLabel>
+                  <InfoValue>{selectedMeeting.todos}</InfoValue>
+                </InfoItem>
               </InfoGrid>
+
+              <ModalDescription>
+                <Trash2 className = "close-icon" />
+                삭제 후에는 회의 상세 내용과 연결된 작업 흐름을 다시 확인할 수 없습니다.
+              </ModalDescription>
             </ModalBody>
 
             <ModalFooter>

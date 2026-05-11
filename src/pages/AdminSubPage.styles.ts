@@ -608,9 +608,14 @@ export const OptionButton = styled.button<{ $selected?: boolean }>`
     color: ${({ theme }) => theme.colors.accent};
   }
 
-  &:hover {
+  &:hover:not(:disabled) {
     border-color: ${({ theme }) => theme.colors.accent};
     background: rgba(37, 99, 235, 0.06);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 
   html.dark & {
@@ -620,7 +625,7 @@ export const OptionButton = styled.button<{ $selected?: boolean }>`
       $selected ? 'rgba(37, 99, 235, 0.12)' : '#111827'};
     color: #ffffff;
 
-    &:hover {
+    &:hover:not(:disabled) {
       border-color: ${({ theme }) => theme.colors.accent};
       background: rgba(37, 99, 235, 0.12);
     }
