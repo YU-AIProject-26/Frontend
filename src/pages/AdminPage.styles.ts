@@ -116,6 +116,7 @@ export const ContentGrid = styled.div`
   display: grid;
   grid-template-columns: minmax(0, 2fr) minmax(340px, 1fr);
   gap: 1.5rem;
+  align-items: stretch;
 
   @media (max-width: 1100px) {
     grid-template-columns: 1fr;
@@ -124,16 +125,22 @@ export const ContentGrid = styled.div`
 
 export const WideSection = styled.div`
   min-width: 0;
+  display: flex;
 `;
 
 export const SideSection = styled.div`
   min-width: 0;
+  display: flex;
 `;
 
 export const SectionCard = styled.section`
   ${cardBase};
+  width: 100%;
+  height: 100%;
   padding: 1.5rem;
   border-radius: 1rem;
+  display: flex;
+  flex-direction: column;
 `;
 
 export const SectionHeader = styled.div`
@@ -331,6 +338,7 @@ export const ActivityList = styled.div`
   display: flex;
   flex-direction: column;
   gap: 0.875rem;
+  flex: 1;
 `;
 
 export const ActivityItem = styled.div`
@@ -420,6 +428,7 @@ export const InquiryList = styled.div`
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  flex: 1;
 `;
 
 export const InquiryItem = styled.div`
