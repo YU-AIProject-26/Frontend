@@ -7,6 +7,7 @@ import {
   CheckCircle2,
   Clock3,
   X,
+  RotateCcw,
 } from 'lucide-react';
 import {
   AdminSubPageWrapper,
@@ -49,11 +50,19 @@ import {
   FormGroup,
   FormLabel,
   FormTextArea,
+  ToolbarActions,
+  ToolbarButton,
+  ResultMeta,
 } from './AdminSubPage.styles';
 import AdminActionToast from '../components/AdminActionToast';
 
 type InquiryType = '문의' | '신고' | '피드백';
 type InquiryStatus = '대기' | '처리중' | '완료';
+type InquirySort =
+  | 'created-desc'
+  | 'created-asc'
+  | 'title-asc'
+  | 'author-asc';
 
 type InquiryItem = {
   id: number;
@@ -113,6 +122,7 @@ export default function AdminInquiriesPage() {
   const [searchKeyword, setSearchKeyword] = useState('');
   const [typeFilter, setTypeFilter] = useState<'all' | InquiryType>('all');
   const [statusFilter, setStatusFilter] = useState<'all' | InquiryStatus>('all');
+  const [sortBy, setSortBy] = useState<InquirySort>('created-desc');
 
   const [selectedInquiry, setSelectedInquiry] = useState<InquiryItem | null>(null);
   const [memoInput, setMemoInput] = useState('');
@@ -130,7 +140,7 @@ export default function AdminInquiriesPage() {
   });
 
   const filteredInquiries = useMemo(() => {
-    return inquiries.filter((item) => {
+    const result = inquiries.filter((item) => {
       const keyword = searchKeyword.trim().toLowerCase();
 
       const matchesKeyword =
@@ -145,7 +155,23 @@ export default function AdminInquiriesPage() {
 
       return matchesKeyword && matchesType && matchesStatus;
     });
-  }, [inquiries, searchKeyword, typeFilter, statusFilter]);
+
+    return [...result].sort((a, b) => {
+      if (sortBy === 'created-desc') {
+        return b.createdAt.localeCompare(a.createdAt);
+      }
+
+      if (sortBy === 'created-asc') {
+        return a.createdAt.localeCompare(b.createdAt);
+      }
+
+      if (sortBy === 'title-asc') {
+        return a.title.localeCompare(b.title, 'ko');
+      }
+
+      return a.author.localeCompare(b.author, 'ko');
+    });
+  }, [inquiries, searchKeyword, typeFilter, statusFilter, sortBy]);
 
   const summary = useMemo(() => {
     return {
@@ -169,6 +195,14 @@ export default function AdminInquiriesPage() {
       ...prev,
       open: false,
     }));
+  };
+
+  const resetToolbar = () => {
+    setSearchKeyword('');
+    setTypeFilter('all');
+    setStatusFilter('all');
+    setSortBy('created-desc');
+    showToast('문의 관리 필터가 초기화되었습니다.', 'success');
   };
 
   const openDetailModal = (item: InquiryItem) => {
@@ -286,7 +320,26 @@ export default function AdminInquiriesPage() {
             <option value = "처리중">처리중</option>
             <option value = "완료">완료</option>
           </FilterSelect>
+
+          <FilterSelect
+            value = {sortBy}
+            onChange = {(e) => setSortBy(e.target.value as InquirySort)}
+          >
+            <option value = "created-desc">최신 접수순</option>
+            <option value = "created-asc">오래된 접수순</option>
+            <option value = "title-asc">제목순</option>
+            <option value = "author-asc">작성자순</option>
+          </FilterSelect>
+
+          <ToolbarActions>
+            <ToolbarButton type = "button" onClick = {resetToolbar}>
+              <RotateCcw className = "toolbar-icon" />
+              초기화
+            </ToolbarButton>
+          </ToolbarActions>
         </SearchFilterRow>
+
+        <ResultMeta>현재 조건에 맞는 문의 항목 {filteredInquiries.length}건</ResultMeta>
 
         <DataCard>
           {filteredInquiries.length === 0 ? (
