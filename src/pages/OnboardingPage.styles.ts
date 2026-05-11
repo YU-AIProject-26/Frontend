@@ -307,8 +307,16 @@ export const OutlineButton = styled.button`
   background: ${({ theme }) => theme.colors.background};
   color: ${({ theme }) => theme.colors.foreground};
 
-  &:hover {
+  &:hover:not(:disabled) {
     background: ${({ theme }) => theme.colors.secondary};
+  }
+
+  &:disabled {
+    border: 1px solid ${({ theme }) => theme.colors.border};
+    background: ${({ theme }) => theme.colors.secondary};
+    color: ${({ theme }) => theme.colors.mutedForeground};
+    cursor: not-allowed;
+    opacity: 1;
   }
 `;
 
