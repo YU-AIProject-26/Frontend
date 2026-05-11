@@ -47,6 +47,10 @@ import {
   MeetingMeta,
   MeetingSummary,
   MeetingActions,
+  MeetingMenuWrapper,
+  MeetingMenuButton,
+  MeetingMenu,
+  MeetingMenuItem,
   StatusBadge,
   TodoCalendarGrid,
   TodoListCard,
@@ -73,16 +77,36 @@ import {
   UpcomingEventTime,
 } from './DashboardPage.styles';
 
+type MeetingStatus = 'completed' | 'analyzing' | 'failed';
+
+type MeetingItem = {
+  id: number;
+  title: string;
+  date: string;
+  status: MeetingStatus;
+  summary: string;
+  duration: string;
+};
+
+type TodoItemType = {
+  id: number;
+  text: string;
+  assignee: string;
+  dueDate: string;
+  completed: boolean;
+};
+
 export default function DashboardPage() {
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [hasData] = useState(true);
+  const [openMenuId, setOpenMenuId] = useState<number | null>(null);
 
-  const recentMeetings = [
+  const [recentMeetings, setRecentMeetings] = useState<MeetingItem[]>([
     {
       id: 1,
       title: '주간 마케팅 전략 회의',
       date: '2026년 4월 7일 14:00',
-      status: 'completed' as const,
+      status: 'completed',
       summary: 'Q2 마케팅 캠페인 전략 수립 및 예산 논의',
       duration: '1시간 23분',
     },
@@ -90,7 +114,7 @@ export default function DashboardPage() {
       id: 2,
       title: '제품 로드맵 리뷰',
       date: '2026년 4월 6일 10:00',
-      status: 'analyzing' as const,
+      status: 'analyzing',
       summary: '분석 중...',
       duration: '2시간 15분',
     },
@@ -98,13 +122,13 @@ export default function DashboardPage() {
       id: 3,
       title: '고객 피드백 세션',
       date: '2026년 4월 5일 16:00',
-      status: 'completed' as const,
+      status: 'completed',
       summary: '주요 고객 요청사항 수집 및 우선순위 결정',
       duration: '45분',
     },
-  ];
+  ]);
 
-  const [todos, setTodos] = useState([
+  const [todos, setTodos] = useState<TodoItemType[]>([
     {
       id: 1,
       text: '마케팅 캠페인 예산안 작성',
@@ -151,7 +175,20 @@ export default function DashboardPage() {
     );
   };
 
-  const getStatusBadge = (status: string) => {
+  const handleDeleteMeeting = (id: number) => {
+    setRecentMeetings((prev) => prev.filter((meeting) => meeting.id !== id));
+    setOpenMenuId(null);
+  };
+
+  const toggleMeetingMenu = (id: number) => {
+    setOpenMenuId((prev) => (prev === id ? null : id));
+  };
+
+  const closeMeetingMenu = () => {
+    setOpenMenuId(null);
+  };
+
+  const getStatusBadge = (status: MeetingStatus) => {
     switch (status) {
       case 'completed':
         return (
@@ -278,32 +315,62 @@ export default function DashboardPage() {
 
         <MeetingsList>
           {recentMeetings.map((meeting) => (
-            <MeetingLink key = {meeting.id} to = {`/meetings/${meeting.id}`}>
-              <MeetingCard>
-                <MeetingTop>
-                  <MeetingLeft>
+            <MeetingCard key = {meeting.id}>
+              <MeetingTop>
+                <MeetingLeft>
+                  <MeetingLink to = {`/meetings/${meeting.id}`}>
                     <MeetingTitle>{meeting.title}</MeetingTitle>
-                    <MeetingMeta>
-                      <span className = "meeting-meta-item">
-                        <Clock className = "meeting-meta-icon" />
-                        {meeting.date}
-                      </span>
-                      <span>•</span>
-                      <span>{meeting.duration}</span>
-                    </MeetingMeta>
-                  </MeetingLeft>
+                  </MeetingLink>
 
-                  <MeetingActions>
-                    {getStatusBadge(meeting.status)}
-                    <button type = "button" aria-label = "more">
+                  <MeetingMeta>
+                    <span className = "meeting-meta-item">
+                      <Clock className = "meeting-meta-icon" />
+                      {meeting.date}
+                    </span>
+                    <span>•</span>
+                    <span>{meeting.duration}</span>
+                  </MeetingMeta>
+                </MeetingLeft>
+
+                <MeetingActions>
+                  {getStatusBadge(meeting.status)}
+
+                  <MeetingMenuWrapper>
+                    <MeetingMenuButton
+                      type = "button"
+                      aria-label = "meeting-menu"
+                      onClick = {() => toggleMeetingMenu(meeting.id)}
+                    >
                       <MoreVertical className = "meeting-more-icon" />
-                    </button>
-                  </MeetingActions>
-                </MeetingTop>
+                    </MeetingMenuButton>
 
+                    {openMenuId === meeting.id && (
+                      <MeetingMenu>
+                        <MeetingMenuItem
+                          as = {Link}
+                          to = {`/meetings/${meeting.id}/edit`}
+                          onClick = {closeMeetingMenu}
+                        >
+                          수정하기
+                        </MeetingMenuItem>
+
+                        <MeetingMenuItem
+                          type = "button"
+                          $danger = {true}
+                          onClick = {() => handleDeleteMeeting(meeting.id)}
+                        >
+                          삭제하기
+                        </MeetingMenuItem>
+                      </MeetingMenu>
+                    )}
+                  </MeetingMenuWrapper>
+                </MeetingActions>
+              </MeetingTop>
+
+              <MeetingLink to = {`/meetings/${meeting.id}`}>
                 <MeetingSummary>{meeting.summary}</MeetingSummary>
-              </MeetingCard>
-            </MeetingLink>
+              </MeetingLink>
+            </MeetingCard>
           ))}
         </MeetingsList>
       </MainCard>
