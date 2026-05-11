@@ -43,10 +43,12 @@ import {
   OutlineButton,
   PrimaryButton,
 } from './OnboardingPage.styles';
+import { useAuth } from '../contexts/useAuth';
 
 export default function OnboardingPage() {
   const [step, setStep] = useState(1);
   const navigate = useNavigate();
+  const { completeOnboarding } = useAuth();
 
   const totalSteps = 4;
   const progress = (step / totalSteps) * 100;
@@ -55,12 +57,14 @@ export default function OnboardingPage() {
     if (step < totalSteps) {
       setStep(step + 1);
     } else {
-      navigate('/');
+      completeOnboarding();
+      navigate('/dashboard');
     }
   };
 
   const handleSkip = () => {
-    navigate('/');
+    completeOnboarding();
+    navigate('/dashboard');
   };
 
   return (

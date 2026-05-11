@@ -15,6 +15,9 @@ export type AuthContextType = {
   user: AuthUser | null;
   login: (payload: LoginPayload) => { success: boolean; message: string };
   logout: () => void;
+  hasCompletedOnboarding: boolean;
+  completeOnboarding: () => void;
+  resetOnboarding: () => void;
 };
 
 export const AuthContext = createContext<AuthContextType | null>(null);
