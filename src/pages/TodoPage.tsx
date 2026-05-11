@@ -6,6 +6,7 @@ import {
   MoreVertical,
   Calendar,
   User,
+  X,
 } from 'lucide-react';
 import {
   PageWrapper,
@@ -47,18 +48,24 @@ import {
   TodoMetaItem,
   TodoMetaText,
   OverdueBadge,
+  ModalOverlay,
+  ModalCard,
+  ModalHeader,
+  ModalTitle,
+  ModalCloseButton,
+  ModalBody,
+  ModalGrid,
+  ModalField,
+  ModalLabel,
+  ModalInput,
+  ModalSelect,
+  ModalActions,
+  ModalCancelButton,
+  ModalSubmitButton,
 } from './TodoPage.styles';
 
 type FilterType = 'all' | 'pending' | 'completed';
 type SortType = 'due-date' | 'priority' | 'status' | 'recent';
-type AssigneeFilter =
-  | 'all-assignee'
-  | '김철수'
-  | '이영희'
-  | '박민수'
-  | '최지은'
-  | '정현우';
-
 type TodoStatus = '진행중' | '대기중' | '완료';
 
 type Todo = {
@@ -73,13 +80,25 @@ type Todo = {
   previousStatus?: Exclude<TodoStatus, '완료'>;
 };
 
+const priorityOrder: Record<Todo['priority'], number> = {
+  high: 0,
+  medium: 1,
+  low: 2,
+};
+
+const statusOrder: Record<Todo['status'], number> = {
+  진행중: 0,
+  대기중: 1,
+  완료: 2,
+};
+
 export default function TodoPage() {
   const [filter, setFilter] = useState<FilterType>('all');
-  const [assigneeFilter, setAssigneeFilter] =
-    useState<AssigneeFilter>('all-assignee');
+  const [assigneeFilter, setAssigneeFilter] = useState('all-assignee');
   const [sortType, setSortType] = useState<SortType>('due-date');
   const [searchKeyword, setSearchKeyword] = useState('');
   const [openMenuId, setOpenMenuId] = useState<number | null>(null);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
   const [todos, setTodos] = useState<Todo[]>([
     {
@@ -172,6 +191,73 @@ export default function TodoPage() {
     },
   ]);
 
+  const [newTodo, setNewTodo] = useState({
+    text: '',
+    assignee: '',
+    dueDate: '',
+    priority: 'medium' as 'high' | 'medium' | 'low',
+    source: '',
+    status: '대기중' as Exclude<TodoStatus, '완료'>,
+  });
+
+  const assigneeOptions = useMemo(() => {
+    const uniqueAssignees = Array.from(
+      new Set(
+        todos
+          .map((todo) => todo.assignee.trim())
+          .filter((assignee) => assignee.length > 0)
+      )
+    ).sort((a, b) => a.localeCompare(b, 'ko-KR'));
+
+    return ['all-assignee', ...uniqueAssignees];
+  }, [todos]);
+
+  const resetNewTodo = () => {
+    setNewTodo({
+      text: '',
+      assignee: '',
+      dueDate: '',
+      priority: 'medium',
+      source: '',
+      status: '대기중',
+    });
+  };
+
+  const openAddModal = () => {
+    resetNewTodo();
+    setIsAddModalOpen(true);
+  };
+
+  const closeAddModal = () => {
+    setIsAddModalOpen(false);
+  };
+
+  const handleAddTodo = () => {
+    if (
+      !newTodo.text.trim() ||
+      !newTodo.assignee.trim() ||
+      !newTodo.dueDate ||
+      !newTodo.source.trim()
+    ) {
+      return;
+    }
+
+    const createdTodo: Todo = {
+      id: Date.now(),
+      text: newTodo.text.trim(),
+      assignee: newTodo.assignee.trim(),
+      dueDate: newTodo.dueDate,
+      priority: newTodo.priority,
+      completed: false,
+      source: newTodo.source.trim(),
+      status: newTodo.status,
+      previousStatus: newTodo.status,
+    };
+
+    setTodos((prev) => [createdTodo, ...prev]);
+    closeAddModal();
+  };
+
   const toggleTodoCompleted = (id: number) => {
     setTodos((prev) =>
       prev.map((todo) => {
@@ -188,7 +274,10 @@ export default function TodoPage() {
         return {
           ...todo,
           completed: true,
-          previousStatus: todo.status === '완료' ? todo.previousStatus ?? '진행중' : todo.status,
+          previousStatus:
+            todo.status === '완료'
+              ? todo.previousStatus ?? '진행중'
+              : todo.status,
           status: '완료',
         };
       })
@@ -215,18 +304,6 @@ export default function TodoPage() {
       month: 'long',
       day: 'numeric',
     });
-  };
-
-  const priorityOrder: Record<Todo['priority'], number> = {
-    high: 0,
-    medium: 1,
-    low: 2,
-  };
-
-  const statusOrder: Record<Todo['status'], number> = {
-    진행중: 0,
-    대기중: 1,
-    완료: 2,
   };
 
   const filteredTodos = useMemo(() => {
@@ -274,188 +351,304 @@ export default function TodoPage() {
   }, [todos, filter, assigneeFilter, sortType, searchKeyword]);
 
   return (
-    <PageWrapper>
-      <HeaderSection>
-        <HeaderLeft>
-          <HeaderTitle>Todo</HeaderTitle>
-          <HeaderDescription>
-            회의에서 생성된 실행 항목을 관리하세요
-          </HeaderDescription>
-        </HeaderLeft>
+    <>
+      <PageWrapper>
+        <HeaderSection>
+          <HeaderLeft>
+            <HeaderTitle>Todo</HeaderTitle>
+            <HeaderDescription>
+              회의에서 생성된 실행 항목을 관리하세요
+            </HeaderDescription>
+          </HeaderLeft>
 
-        <AddButton type = "button">
-          <Plus className = "button-icon" />
-          Todo 추가
-        </AddButton>
-      </HeaderSection>
+          <AddButton type = "button" onClick = {openAddModal}>
+            <Plus className = "button-icon" />
+            Todo 추가
+          </AddButton>
+        </HeaderSection>
 
-      <StatsGrid>
-        <StatCard>
-          <StatLabel>전체 Todo</StatLabel>
-          <StatValue $variant = "default">{stats.total}</StatValue>
-        </StatCard>
+        <StatsGrid>
+          <StatCard>
+            <StatLabel>전체 Todo</StatLabel>
+            <StatValue $variant = "default">{stats.total}</StatValue>
+          </StatCard>
 
-        <StatCard>
-          <StatLabel>완료</StatLabel>
-          <StatValue $variant = "muted">{stats.completed}</StatValue>
-        </StatCard>
+          <StatCard>
+            <StatLabel>완료</StatLabel>
+            <StatValue $variant = "muted">{stats.completed}</StatValue>
+          </StatCard>
 
-        <StatCard>
-          <StatLabel>진행중</StatLabel>
-          <StatValue $variant = "accent">{stats.pending}</StatValue>
-        </StatCard>
+          <StatCard>
+            <StatLabel>진행중</StatLabel>
+            <StatValue $variant = "accent">{stats.pending}</StatValue>
+          </StatCard>
 
-        <StatCard>
-          <StatLabel>긴급</StatLabel>
-          <StatValue $variant = "danger">{stats.highPriority}</StatValue>
-        </StatCard>
-      </StatsGrid>
+          <StatCard>
+            <StatLabel>긴급</StatLabel>
+            <StatValue $variant = "danger">{stats.highPriority}</StatValue>
+          </StatCard>
+        </StatsGrid>
 
-      <FilterCard>
-        <FilterRow>
-          <SearchWrapper>
-            <SearchIcon>
-              <Search className = "search-icon" />
-            </SearchIcon>
-            <SearchInput
-              placeholder = "Todo 검색..."
-              value = {searchKeyword}
-              onChange = {(e) => setSearchKeyword(e.target.value)}
-            />
-          </SearchWrapper>
+        <FilterCard>
+          <FilterRow>
+            <SearchWrapper>
+              <SearchIcon>
+                <Search className = "search-icon" />
+              </SearchIcon>
+              <SearchInput
+                placeholder = "Todo 검색..."
+                value = {searchKeyword}
+                onChange = {(e) => setSearchKeyword(e.target.value)}
+              />
+            </SearchWrapper>
 
-          <SelectWrapper>
-            <SelectIconBox>
-              <Filter className = "select-icon" />
-            </SelectIconBox>
-            <SelectElement
-              value = {filter}
-              onChange = {(e) => setFilter(e.target.value as FilterType)}
-            >
-              <option value = "all">전체</option>
-              <option value = "pending">진행중</option>
-              <option value = "completed">완료</option>
-            </SelectElement>
-          </SelectWrapper>
+            <SelectWrapper>
+              <SelectIconBox>
+                <Filter className = "select-icon" />
+              </SelectIconBox>
+              <SelectElement
+                value = {filter}
+                onChange = {(e) => setFilter(e.target.value as FilterType)}
+              >
+                <option value = "all">전체</option>
+                <option value = "pending">진행중</option>
+                <option value = "completed">완료</option>
+              </SelectElement>
+            </SelectWrapper>
 
-          <SelectWrapper>
-            <SelectIconBox>
-              <User className = "select-icon" />
-            </SelectIconBox>
-            <SelectElement
-              value = {assigneeFilter}
-              onChange = {(e) =>
-                setAssigneeFilter(e.target.value as AssigneeFilter)
-              }
-            >
-              <option value = "all-assignee">모든 담당자</option>
-              <option value = "김철수">김철수</option>
-              <option value = "이영희">이영희</option>
-              <option value = "박민수">박민수</option>
-              <option value = "최지은">최지은</option>
-              <option value = "정현우">정현우</option>
-            </SelectElement>
-          </SelectWrapper>
+            <SelectWrapper>
+              <SelectIconBox>
+                <User className = "select-icon" />
+              </SelectIconBox>
+              <SelectElement
+                value = {assigneeFilter}
+                onChange = {(e) => setAssigneeFilter(e.target.value)}
+              >
+                {assigneeOptions.map((assignee) => (
+                  <option key = {assignee} value = {assignee}>
+                    {assignee === 'all-assignee' ? '모든 담당자' : assignee}
+                  </option>
+                ))}
+              </SelectElement>
+            </SelectWrapper>
 
-          <SelectWrapper>
-            <SelectElement
-              value = {sortType}
-              onChange = {(e) => setSortType(e.target.value as SortType)}
-            >
-              <option value = "due-date">마감일순</option>
-              <option value = "priority">우선순위순</option>
-              <option value = "status">상태순</option>
-              <option value = "recent">최신순</option>
-            </SelectElement>
-          </SelectWrapper>
-        </FilterRow>
-      </FilterCard>
+            <SelectWrapper>
+              <SelectElement
+                value = {sortType}
+                onChange = {(e) => setSortType(e.target.value as SortType)}
+              >
+                <option value = "due-date">마감일순</option>
+                <option value = "priority">우선순위순</option>
+                <option value = "status">상태순</option>
+                <option value = "recent">최신순</option>
+              </SelectElement>
+            </SelectWrapper>
+          </FilterRow>
+        </FilterCard>
 
-      <TodoListCard>
-        <TodoList>
-          {filteredTodos.map((todo) => (
-            <TodoItem
-              key = {todo.id}
-              $overdue = {isOverdue(todo.dueDate, todo.completed)}
-            >
-              <TodoMain>
-                <TodoCheckbox
-                  type = "checkbox"
-                  checked = {todo.completed}
-                  onChange = {() => toggleTodoCompleted(todo.id)}
-                />
+        <TodoListCard>
+          <TodoList>
+            {filteredTodos.map((todo) => (
+              <TodoItem
+                key = {todo.id}
+                $overdue = {isOverdue(todo.dueDate, todo.completed)}
+              >
+                <TodoMain>
+                  <TodoCheckbox
+                    type = "checkbox"
+                    checked = {todo.completed}
+                    onChange = {() => toggleTodoCompleted(todo.id)}
+                  />
 
-                <TodoContent>
-                  <TodoTopRow>
-                    <div>
-                      <TodoText $completed = {todo.completed}>{todo.text}</TodoText>
-                      <TodoSource>출처: {todo.source}</TodoSource>
-                    </div>
+                  <TodoContent>
+                    <TodoTopRow>
+                      <div>
+                        <TodoText $completed = {todo.completed}>
+                          {todo.text}
+                        </TodoText>
+                        <TodoSource>출처: {todo.source}</TodoSource>
+                      </div>
 
-                    <TodoRight>
-                      <BadgeRow>
-                        <PriorityBadge $priority = {todo.priority}>
-                          {todo.priority === 'high'
-                            ? '긴급'
-                            : todo.priority === 'medium'
-                            ? '보통'
-                            : '낮음'}
-                        </PriorityBadge>
+                      <TodoRight>
+                        <BadgeRow>
+                          <PriorityBadge $priority = {todo.priority}>
+                            {todo.priority === 'high'
+                              ? '긴급'
+                              : todo.priority === 'medium'
+                              ? '보통'
+                              : '낮음'}
+                          </PriorityBadge>
 
-                        <StatusBadge $status = {todo.status}>
-                          {todo.status}
-                        </StatusBadge>
-                      </BadgeRow>
+                          <StatusBadge $status = {todo.status}>
+                            {todo.status}
+                          </StatusBadge>
+                        </BadgeRow>
 
-                      <ActionMenuWrapper>
-                        <ActionMenuButton
-                          type = "button"
-                          onClick = {() =>
-                            setOpenMenuId((prev) =>
-                              prev === todo.id ? null : todo.id
-                            )
-                          }
+                        <ActionMenuWrapper>
+                          <ActionMenuButton
+                            type = "button"
+                            onClick = {() =>
+                              setOpenMenuId((prev) =>
+                                prev === todo.id ? null : todo.id
+                              )
+                            }
+                          >
+                            <MoreVertical className = "menu-icon" />
+                          </ActionMenuButton>
+
+                          {openMenuId === todo.id && (
+                            <ActionMenu>
+                              <ActionMenuItem>수정하기</ActionMenuItem>
+                              <ActionMenuItem>담당자 변경</ActionMenuItem>
+                              <ActionMenuItem>마감일 변경</ActionMenuItem>
+                              <ActionMenuItem $danger>삭제하기</ActionMenuItem>
+                            </ActionMenu>
+                          )}
+                        </ActionMenuWrapper>
+                      </TodoRight>
+                    </TodoTopRow>
+
+                    <TodoMetaRow>
+                      <TodoMetaItem>
+                        <User className = "meta-icon" />
+                        <TodoMetaText>{todo.assignee}</TodoMetaText>
+                      </TodoMetaItem>
+
+                      <TodoMetaItem>
+                        <Calendar className = "meta-icon" />
+                        <TodoMetaText
+                          $overdue = {isOverdue(todo.dueDate, todo.completed)}
                         >
-                          <MoreVertical className = "menu-icon" />
-                        </ActionMenuButton>
+                          {formatKoreanDate(todo.dueDate)}
+                        </TodoMetaText>
 
-                        {openMenuId === todo.id && (
-                          <ActionMenu>
-                            <ActionMenuItem>수정하기</ActionMenuItem>
-                            <ActionMenuItem>담당자 변경</ActionMenuItem>
-                            <ActionMenuItem>마감일 변경</ActionMenuItem>
-                            <ActionMenuItem $danger>삭제하기</ActionMenuItem>
-                          </ActionMenu>
+                        {isOverdue(todo.dueDate, todo.completed) && (
+                          <OverdueBadge>기한 초과</OverdueBadge>
                         )}
-                      </ActionMenuWrapper>
-                    </TodoRight>
-                  </TodoTopRow>
+                      </TodoMetaItem>
+                    </TodoMetaRow>
+                  </TodoContent>
+                </TodoMain>
+              </TodoItem>
+            ))}
+          </TodoList>
+        </TodoListCard>
+      </PageWrapper>
 
-                  <TodoMetaRow>
-                    <TodoMetaItem>
-                      <User className = "meta-icon" />
-                      <TodoMetaText>{todo.assignee}</TodoMetaText>
-                    </TodoMetaItem>
+      {isAddModalOpen && (
+        <ModalOverlay onClick = {closeAddModal}>
+          <ModalCard onClick = {(e) => e.stopPropagation()}>
+            <ModalHeader>
+              <ModalTitle>Todo 추가</ModalTitle>
+              <ModalCloseButton type = "button" onClick = {closeAddModal}>
+                <X className = "close-icon" />
+              </ModalCloseButton>
+            </ModalHeader>
 
-                    <TodoMetaItem>
-                      <Calendar className = "meta-icon" />
-                      <TodoMetaText
-                        $overdue = {isOverdue(todo.dueDate, todo.completed)}
-                      >
-                        {formatKoreanDate(todo.dueDate)}
-                      </TodoMetaText>
+            <ModalBody>
+              <ModalGrid>
+                <ModalField>
+                  <ModalLabel>Todo 내용</ModalLabel>
+                  <ModalInput
+                    value = {newTodo.text}
+                    onChange = {(e) =>
+                      setNewTodo((prev) => ({
+                        ...prev,
+                        text: e.target.value,
+                      }))
+                    }
+                    placeholder = "해야 할 작업 내용을 입력하세요"
+                  />
+                </ModalField>
 
-                      {isOverdue(todo.dueDate, todo.completed) && (
-                        <OverdueBadge>기한 초과</OverdueBadge>
-                      )}
-                    </TodoMetaItem>
-                  </TodoMetaRow>
-                </TodoContent>
-              </TodoMain>
-            </TodoItem>
-          ))}
-        </TodoList>
-      </TodoListCard>
-    </PageWrapper>
+                <ModalField>
+                  <ModalLabel>담당자</ModalLabel>
+                  <ModalInput
+                    value = {newTodo.assignee}
+                    onChange = {(e) =>
+                      setNewTodo((prev) => ({
+                        ...prev,
+                        assignee: e.target.value,
+                      }))
+                    }
+                    placeholder = "담당자 이름을 입력하세요"
+                  />
+                </ModalField>
+
+                <ModalField>
+                  <ModalLabel>마감일</ModalLabel>
+                  <ModalInput
+                    type = "date"
+                    value = {newTodo.dueDate}
+                    onChange = {(e) =>
+                      setNewTodo((prev) => ({
+                        ...prev,
+                        dueDate: e.target.value,
+                      }))
+                    }
+                  />
+                </ModalField>
+
+                <ModalField>
+                  <ModalLabel>우선순위</ModalLabel>
+                  <ModalSelect
+                    value = {newTodo.priority}
+                    onChange = {(e) =>
+                      setNewTodo((prev) => ({
+                        ...prev,
+                        priority: e.target.value as 'high' | 'medium' | 'low',
+                      }))
+                    }
+                  >
+                    <option value = "high">긴급</option>
+                    <option value = "medium">보통</option>
+                    <option value = "low">낮음</option>
+                  </ModalSelect>
+                </ModalField>
+
+                <ModalField>
+                  <ModalLabel>출처</ModalLabel>
+                  <ModalInput
+                    value = {newTodo.source}
+                    onChange = {(e) =>
+                      setNewTodo((prev) => ({
+                        ...prev,
+                        source: e.target.value,
+                      }))
+                    }
+                    placeholder = "예: 주간 마케팅 전략 회의"
+                  />
+                </ModalField>
+
+                <ModalField>
+                  <ModalLabel>상태</ModalLabel>
+                  <ModalSelect
+                    value = {newTodo.status}
+                    onChange = {(e) =>
+                      setNewTodo((prev) => ({
+                        ...prev,
+                        status: e.target.value as Exclude<TodoStatus, '완료'>,
+                      }))
+                    }
+                  >
+                    <option value = "진행중">진행중</option>
+                    <option value = "대기중">대기중</option>
+                  </ModalSelect>
+                </ModalField>
+              </ModalGrid>
+            </ModalBody>
+
+            <ModalActions>
+              <ModalCancelButton type = "button" onClick = {closeAddModal}>
+                취소
+              </ModalCancelButton>
+              <ModalSubmitButton type = "button" onClick = {handleAddTodo}>
+                추가
+              </ModalSubmitButton>
+            </ModalActions>
+          </ModalCard>
+        </ModalOverlay>
+      )}
+    </>
   );
 }

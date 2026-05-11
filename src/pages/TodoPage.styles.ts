@@ -544,3 +544,217 @@ export const OverdueBadge = styled.span`
   font-size: 0.75rem;
   font-weight: 500;
 `;
+
+export const ModalOverlay = styled.div`
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+`;
+
+export const ModalCard = styled.div`
+  width: 100%;
+  max-width: 42rem;
+  border-radius: 1rem;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  box-shadow: 0 24px 64px rgba(15, 23, 42, 0.18);
+  overflow: hidden;
+
+  html.dark & {
+    border-color: #262626;
+    background: #1a1a1a;
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.45);
+  }
+`;
+
+export const ModalHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem 1.5rem 1rem;
+  border-bottom: 1px solid #e5e7eb;
+
+  html.dark & {
+    border-bottom-color: #262626;
+  }
+`;
+
+export const ModalTitle = styled.h2`
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #111827;
+
+  html.dark & {
+    color: #ffffff;
+  }
+`;
+
+export const ModalCloseButton = styled.button`
+  width: 2.25rem;
+  height: 2.25rem;
+  border: none;
+  border-radius: 9999px;
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover {
+    background: #f3f4f6;
+  }
+
+  .close-icon {
+    width: 1rem;
+    height: 1rem;
+    color: #6b7280;
+  }
+
+  html.dark & {
+    &:hover {
+      background: #1f2937;
+    }
+
+    .close-icon {
+      color: #9ca3af;
+    }
+  }
+`;
+
+export const ModalBody = styled.div`
+  padding: 1.5rem;
+`;
+
+export const ModalGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+`;
+
+export const ModalField = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  &:first-child,
+  &:nth-child(5) {
+    grid-column: span 2;
+  }
+`;
+
+export const ModalLabel = styled.label`
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #111827;
+
+  html.dark & {
+    color: #ffffff;
+  }
+`;
+
+export const ModalInput = styled.input`
+  width: 100%;
+  height: 2.75rem;
+  padding: 0 1rem;
+  border-radius: 0.75rem;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  color: #111827;
+  font-size: 0.9375rem;
+  outline: none;
+
+  &::placeholder {
+    color: #9ca3af;
+  }
+
+  &:focus {
+    border-color: ${({ theme }) => theme.colors.accent};
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+  }
+
+  html.dark & {
+    border-color: #262626;
+    background: #0a0a0a;
+    color: #ffffff;
+  }
+`;
+
+export const ModalSelect = styled.select`
+  width: 100%;
+  height: 2.75rem;
+  padding: 0 1rem;
+  border-radius: 0.75rem;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  color: #111827;
+  font-size: 0.9375rem;
+  outline: none;
+
+  &:focus {
+    border-color: ${({ theme }) => theme.colors.accent};
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+  }
+
+  html.dark & {
+    border-color: #262626;
+    background: #0a0a0a;
+    color: #ffffff;
+  }
+`;
+
+export const ModalActions = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem 1.5rem;
+`;
+
+export const ModalCancelButton = styled.button`
+  height: 2.75rem;
+  padding: 0 1.25rem;
+  border-radius: 0.75rem;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  color: #111827;
+  font-size: 0.9375rem;
+  font-weight: 500;
+
+  &:hover {
+    background: #f3f4f6;
+  }
+
+  html.dark & {
+    border-color: #262626;
+    background: #1a1a1a;
+    color: #ffffff;
+
+    &:hover {
+      background: #1f2937;
+    }
+  }
+`;
+
+export const ModalSubmitButton = styled.button`
+  height: 2.75rem;
+  padding: 0 1.25rem;
+  border: none;
+  border-radius: 0.75rem;
+  background: ${({ theme }) => theme.colors.accent};
+  color: #ffffff;
+  font-size: 0.9375rem;
+  font-weight: 500;
+
+  &:hover {
+    background: color-mix(
+      in srgb,
+      ${({ theme }) => theme.colors.accent} 90%,
+      transparent
+    );
+  }
+`;
