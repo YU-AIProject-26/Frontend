@@ -18,6 +18,7 @@ import MyPage from './pages/MyPage';
 import SettingsPage from './pages/SettingsPage';
 import NotificationsPage from './pages/NotificationsPage';
 import MeetingCreatePage from './pages/MeetingCreatePage';
+import TodoPage from './pages/ToDoPage';
 
 export default function App() {
   return (
@@ -46,6 +47,7 @@ export default function App() {
           <Route path = "/my" element = {<MyPage />} />
           <Route path = "/settings" element = {<SettingsPage />} />
           <Route path = "/meetings/create" element = {<MeetingCreatePage />} />
+          <Route path = "/todo" element = {<TodoPage />} />
         </Route>
 
         <Route path = "/not-found" element = {<NotFoundPage />} />
