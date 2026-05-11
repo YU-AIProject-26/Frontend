@@ -355,3 +355,121 @@ export const FullWidthLink = styled(Link)`
   width: 100%;
   text-decoration: none;
 `;
+
+export const DeleteModalOverlay = styled.div`
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.32);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  z-index: 1000;
+`;
+
+export const DeleteModalCard = styled.div`
+  width: 100%;
+  max-width: 28rem;
+  padding: 2rem;
+  border-radius: 1rem;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  box-shadow: 0 20px 48px rgba(15, 23, 42, 0.18);
+  text-align: center;
+
+  html.dark & {
+    border-color: #262626;
+    background: #111827;
+  }
+`;
+
+export const DeleteModalIconBox = styled.div`
+  width: 3.5rem;
+  height: 3.5rem;
+  margin: 0 auto 1rem;
+  border-radius: 9999px;
+  background: rgba(239, 68, 68, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  svg {
+    width: 1.5rem;
+    height: 1.5rem;
+    color: #ef4444;
+  }
+
+  html.dark & {
+    background: rgba(239, 68, 68, 0.18);
+  }
+`;
+
+export const DeleteModalTitle = styled.h3`
+  margin: 0 0 0.75rem;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #111827;
+
+  html.dark & {
+    color: #ffffff;
+  }
+`;
+
+export const DeleteModalDescription = styled.p`
+  margin: 0;
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: #6b7280;
+
+  html.dark & {
+    color: #9ca3af;
+  }
+`;
+
+export const DeleteModalButtonRow = styled.div`
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+`;
+
+export const DeleteModalCancelButton = styled.button`
+  flex: 1;
+  height: 2.75rem;
+  border-radius: 0.75rem;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  color: #111827;
+  font-size: 0.9375rem;
+  font-weight: 500;
+
+  &:hover {
+    background: #f9fafb;
+  }
+
+  html.dark & {
+    border-color: #262626;
+    background: #111827;
+    color: #ffffff;
+
+    &:hover {
+      background: #0a0a0a;
+    }
+  }
+`;
+
+export const DeleteModalConfirmButton = styled.button`
+  flex: 1;
+  height: 2.75rem;
+  border-radius: 0.75rem;
+  border: none;
+  background: #ef4444;
+  color: #ffffff;
+  font-size: 0.9375rem;
+  font-weight: 600;
+
+  &:hover {
+    background: #dc2626;
+  }
+`;
