@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { User, Mail, Shield, LogOut, Trash2 } from 'lucide-react';
+import { User, Mail, Shield, LogOut, Trash2, Crown, Check } from 'lucide-react';
 import {
   PageWrapper,
   HeaderSection,
@@ -40,19 +40,39 @@ import {
   DeleteModalButtonRow,
   DeleteModalCancelButton,
   DeleteModalConfirmButton,
+  PlanModalOverlay,
+  PlanModalCard,
+  PlanModalIconBox,
+  PlanModalTitle,
+  PlanModalDescription,
+  PlanOptionList,
+  PlanOptionCard,
+  PlanOptionBadge,
+  PlanOptionTop,
+  PlanOptionTitle,
+  PlanOptionPrice,
+  PlanFeatureList,
+  PlanFeatureItem,
+  PlanModalButtonRow,
+  PlanModalCancelButton,
+  PlanModalConfirmButton,
 } from './MyPage.styles';
 import { useAuth } from '../contexts/useAuth';
 
 export default function MyPage() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isPlanModalOpen, setIsPlanModalOpen] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState<'free' | 'pro'>('free');
+  const [currentPlan, setCurrentPlan] = useState<'free' | 'pro'>('free');
 
   const profile = {
     name: user?.name ?? '사용자',
     email: user?.email ?? '',
     joinDate: '2025년 12월 1일',
-    plan: '무료 플랜',
+    plan: currentPlan === 'free' ? '무료 플랜' : 'Pro 플랜',
     meetings: 24,
     todos: 47,
     hours: 32,
@@ -75,6 +95,20 @@ export default function MyPage() {
     setIsDeleteModalOpen(false);
     logout();
     navigate('/landing');
+  };
+
+  const handleOpenPlanModal = () => {
+    setSelectedPlan(currentPlan);
+    setIsPlanModalOpen(true);
+  };
+
+  const handleClosePlanModal = () => {
+    setIsPlanModalOpen(false);
+  };
+
+  const handleConfirmPlanChange = () => {
+    setCurrentPlan(selectedPlan);
+    setIsPlanModalOpen(false);
   };
 
   return (
@@ -152,7 +186,9 @@ export default function MyPage() {
             <Label>플랜</Label>
             <PlanRow>
               <InfoText>{profile.plan}</InfoText>
-              <PrimaryButton type = "button">플랜 업그레이드</PrimaryButton>
+              <PrimaryButton type = "button" onClick = {handleOpenPlanModal}>
+                플랜 업그레이드
+              </PrimaryButton>
             </PlanRow>
           </FormGroup>
 
@@ -248,6 +284,94 @@ export default function MyPage() {
             </DeleteModalButtonRow>
           </DeleteModalCard>
         </DeleteModalOverlay>
+      )}
+
+      {isPlanModalOpen && (
+        <PlanModalOverlay onClick = {handleClosePlanModal}>
+          <PlanModalCard onClick = {(e) => e.stopPropagation()}>
+            <PlanModalIconBox>
+              <Crown />
+            </PlanModalIconBox>
+
+            <PlanModalTitle>플랜을 변경하시겠습니까?</PlanModalTitle>
+
+            <PlanModalDescription>
+              현재 사용 중인 플랜을 변경할 수 있습니다.
+              <br />
+              필요한 기능에 맞는 플랜을 선택해주세요.
+            </PlanModalDescription>
+
+            <PlanOptionList>
+              <PlanOptionCard
+                $selected = {selectedPlan === 'free'}
+                onClick = {() => setSelectedPlan('free')}
+              >
+                <PlanOptionTop>
+                  <div>
+                    <PlanOptionTitle>무료 플랜</PlanOptionTitle>
+                    <PlanOptionPrice>₩0 / 월</PlanOptionPrice>
+                  </div>
+
+                  {currentPlan === 'free' && <PlanOptionBadge>현재 플랜</PlanOptionBadge>}
+                </PlanOptionTop>
+
+                <PlanFeatureList>
+                  <PlanFeatureItem>
+                    <Check className = "feature-icon" />
+                    기본 회의 관리
+                  </PlanFeatureItem>
+                  <PlanFeatureItem>
+                    <Check className = "feature-icon" />
+                    기본 Todo 생성
+                  </PlanFeatureItem>
+                  <PlanFeatureItem>
+                    <Check className = "feature-icon" />
+                    기본 일정 연동
+                  </PlanFeatureItem>
+                </PlanFeatureList>
+              </PlanOptionCard>
+
+              <PlanOptionCard
+                $selected = {selectedPlan === 'pro'}
+                onClick = {() => setSelectedPlan('pro')}
+              >
+                <PlanOptionTop>
+                  <div>
+                    <PlanOptionTitle>Pro 플랜</PlanOptionTitle>
+                    <PlanOptionPrice>₩9,900 / 월</PlanOptionPrice>
+                  </div>
+
+                  {currentPlan === 'pro' && <PlanOptionBadge>현재 플랜</PlanOptionBadge>}
+                </PlanOptionTop>
+
+                <PlanFeatureList>
+                  <PlanFeatureItem>
+                    <Check className = "feature-icon" />
+                    고급 AI 회의 분석
+                  </PlanFeatureItem>
+                  <PlanFeatureItem>
+                    <Check className = "feature-icon" />
+                    무제한 Todo 생성
+                  </PlanFeatureItem>
+                  <PlanFeatureItem>
+                    <Check className = "feature-icon" />
+                    외부 캘린더 확장 연동
+                  </PlanFeatureItem>
+                </PlanFeatureList>
+              </PlanOptionCard>
+            </PlanOptionList>
+
+            <PlanModalButtonRow>
+              <PlanModalCancelButton type = "button" onClick = {handleClosePlanModal}>
+                취소
+              </PlanModalCancelButton>
+
+              <PlanModalConfirmButton type = "button" onClick = {handleConfirmPlanChange}>
+                플랜 변경
+              </PlanModalConfirmButton>
+            </PlanModalButtonRow>
+          </PlanModalCard>
+        </PlanModalOverlay>
       )}
     </>
   );
