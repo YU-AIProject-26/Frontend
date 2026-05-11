@@ -19,10 +19,12 @@ import SettingsPage from './pages/SettingsPage';
 import NotificationsPage from './pages/NotificationsPage';
 import MeetingCreatePage from './pages/MeetingCreatePage';
 import TodoPage from './pages/TodoPage';
+import AdminPage from './pages/AdminPage';
 import { useAuth } from './contexts/useAuth';
 
 export default function App() {
-  const { isAuthenticated, hasCompletedOnboarding } = useAuth();
+  const { isAuthenticated, hasCompletedOnboarding, user } = useAuth();
+  const isAdmin = user?.role === 'admin';
 
   return (
     <>
@@ -118,6 +120,12 @@ export default function App() {
           <Route path = "/settings" element = {<SettingsPage />} />
           <Route path = "/meetings/create" element = {<MeetingCreatePage />} />
           <Route path = "/todo" element = {<TodoPage />} />
+          <Route
+            path = "/admin"
+            element = {
+              isAdmin ? <AdminPage /> : <Navigate to = "/not-found" replace />
+            }
+          />
         </Route>
 
         <Route path = "/not-found" element = {<NotFoundPage />} />
