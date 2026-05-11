@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { ChevronRight, X, Megaphone } from 'lucide-react';
+import { ChevronRight, X, Megaphone, RotateCcw, Search } from 'lucide-react';
 import {
   AdminSubPageWrapper,
   SubPageHeader,
@@ -43,10 +43,21 @@ import {
   InfoLabel,
   InfoValue,
   TableBadge,
+  SearchFilterRow,
+  SearchInputWrapper,
+  SearchInput,
+  FilterSelect,
+  ToolbarActions,
+  ToolbarButton,
+  ResultMeta,
 } from './AdminSubPage.styles';
 import AdminActionToast from '../components/AdminActionToast';
 
 type NoticeStatus = '게시중' | '임시저장';
+type NoticeSort =
+  | 'created-desc'
+  | 'created-asc'
+  | 'title-asc';
 
 type NoticeItemType = {
   id: number;
@@ -80,6 +91,10 @@ export default function AdminNoticesPage() {
   const [contentInput, setContentInput] = useState('');
   const [editingId, setEditingId] = useState<number | null>(null);
 
+  const [searchKeyword, setSearchKeyword] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'all' | NoticeStatus>('all');
+  const [sortBy, setSortBy] = useState<NoticeSort>('created-desc');
+
   const [selectedNotice, setSelectedNotice] = useState<NoticeItemType | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
@@ -101,6 +116,35 @@ export default function AdminNoticesPage() {
     };
   }, [notices]);
 
+  const filteredNotices = useMemo(() => {
+    const result = notices.filter((item) => {
+      const keyword = searchKeyword.trim().toLowerCase();
+
+      const matchesKeyword =
+        keyword.length === 0
+          ? true
+          : item.title.toLowerCase().includes(keyword) ||
+            item.content.toLowerCase().includes(keyword);
+
+      const matchesStatus =
+        statusFilter === 'all' ? true : item.status === statusFilter;
+
+      return matchesKeyword && matchesStatus;
+    });
+
+    return [...result].sort((a, b) => {
+      if (sortBy === 'created-desc') {
+        return b.createdAt.localeCompare(a.createdAt);
+      }
+
+      if (sortBy === 'created-asc') {
+        return a.createdAt.localeCompare(b.createdAt);
+      }
+
+      return a.title.localeCompare(b.title, 'ko');
+    });
+  }, [notices, searchKeyword, statusFilter, sortBy]);
+
   const showToast = (message: string, variant: 'success' | 'error' = 'success') => {
     setToast({
       open: true,
@@ -120,6 +164,13 @@ export default function AdminNoticesPage() {
     setTitleInput('');
     setContentInput('');
     setEditingId(null);
+  };
+
+  const resetToolbar = () => {
+    setSearchKeyword('');
+    setStatusFilter('all');
+    setSortBy('created-desc');
+    showToast('공지사항 관리 필터가 초기화되었습니다.', 'success');
   };
 
   const handleSaveDraft = () => {
@@ -207,6 +258,7 @@ export default function AdminNoticesPage() {
     setTitleInput(notice.title);
     setContentInput(notice.content);
     window.scrollTo({ top: 0, behavior: 'smooth' });
+    showToast('수정할 공지사항을 불러왔습니다.', 'success');
   };
 
   const openDeleteModal = (notice: NoticeItemType) => {
@@ -306,16 +358,54 @@ export default function AdminNoticesPage() {
           </FormButtonRow>
         </FormCard>
 
+        <SearchFilterRow>
+          <SearchInputWrapper>
+            <Search className = "search-icon" />
+            <SearchInput
+              value = {searchKeyword}
+              onChange = {(e) => setSearchKeyword(e.target.value)}
+              placeholder = "공지 제목 또는 내용 검색"
+            />
+          </SearchInputWrapper>
+
+          <FilterSelect
+            value = {statusFilter}
+            onChange = {(e) => setStatusFilter(e.target.value as 'all' | NoticeStatus)}
+          >
+            <option value = "all">전체 상태</option>
+            <option value = "게시중">게시중</option>
+            <option value = "임시저장">임시저장</option>
+          </FilterSelect>
+
+          <FilterSelect
+            value = {sortBy}
+            onChange = {(e) => setSortBy(e.target.value as NoticeSort)}
+          >
+            <option value = "created-desc">최신 등록순</option>
+            <option value = "created-asc">오래된 등록순</option>
+            <option value = "title-asc">제목순</option>
+          </FilterSelect>
+
+          <ToolbarActions>
+            <ToolbarButton type = "button" onClick = {resetToolbar}>
+              <RotateCcw className = "toolbar-icon" />
+              초기화
+            </ToolbarButton>
+          </ToolbarActions>
+        </SearchFilterRow>
+
+        <ResultMeta>현재 조건에 맞는 공지사항 {filteredNotices.length}건</ResultMeta>
+
         <NoticeListCard>
           <NoticeListTitle>공지 목록</NoticeListTitle>
 
-          {notices.length === 0 ? (
+          {filteredNotices.length === 0 ? (
             <EmptyStateBox>
               <Megaphone className = "empty-icon" />
-              <EmptyStateText>등록된 공지사항이 없습니다.</EmptyStateText>
+              <EmptyStateText>조건에 맞는 공지사항이 없습니다.</EmptyStateText>
             </EmptyStateBox>
           ) : (
-            notices.map((item) => (
+            filteredNotices.map((item) => (
               <NoticeItem key = {item.id}>
                 <div>
                   <NoticeItemTitle>{item.title}</NoticeItemTitle>
