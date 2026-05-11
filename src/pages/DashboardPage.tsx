@@ -270,7 +270,7 @@ export default function DashboardPage() {
       <MainCard>
         <SectionHeader>
           <SectionTitle>최근 회의</SectionTitle>
-          <SectionLinkButton to = "/dashboard/meetings">
+          <SectionLinkButton to = "/meetings">
             모두 보기
             <ArrowRight className = "link-arrow" />
           </SectionLinkButton>
@@ -278,7 +278,7 @@ export default function DashboardPage() {
 
         <MeetingsList>
           {recentMeetings.map((meeting) => (
-            <MeetingLink key = {meeting.id} to = {`/dashboard/meetings/${meeting.id}`}>
+            <MeetingLink key = {meeting.id} to = {`/meetings/${meeting.id}`}>
               <MeetingCard>
                 <MeetingTop>
                   <MeetingLeft>
@@ -342,7 +342,7 @@ export default function DashboardPage() {
         <CalendarSideCard>
           <CalendarSectionHeader>
             <SectionTitle>일정 캘린더</SectionTitle>
-            <SectionLinkButton to = "/dashboard/calendar">
+            <SectionLinkButton to = "/calendar">
               모두 보기
               <ArrowRight className = "link-arrow" />
             </SectionLinkButton>
