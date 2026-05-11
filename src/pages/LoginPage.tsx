@@ -1,4 +1,5 @@
-import { Link } from 'react-router-dom';
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   LoginCard,
   HeaderSection,
@@ -23,8 +24,31 @@ import {
 import GoogleLogo from '../assets/google_logo.svg';
 import NaverLogo from '../assets/naver_logo.svg';
 import KakaoLogo from '../assets/kakao_logo.png';
+import { useAuth } from '../contexts/useAuth';
 
 export default function LoginPage() {
+  const navigate = useNavigate();
+  const { login } = useAuth();
+
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    const result = login({
+      email,
+      password,
+    });
+
+    if (!result.success) {
+      alert(result.message);
+      return;
+    }
+
+    navigate('/dashboard');
+  };
+
   return (
     <LoginCard>
       <HeaderSection>
@@ -32,13 +56,15 @@ export default function LoginPage() {
         <Subtitle>회의를 더 스마트하게 관리하세요</Subtitle>
       </HeaderSection>
 
-      <Form>
+      <Form onSubmit = {handleSubmit}>
         <FieldGroup>
           <Label htmlFor = "email">이메일</Label>
           <TextInput
             id = "email"
             type = "email"
             placeholder = "example@acta.com"
+            value = {email}
+            onChange = {(e) => setEmail(e.target.value)}
           />
         </FieldGroup>
 
@@ -54,6 +80,8 @@ export default function LoginPage() {
             id = "password"
             type = "password"
             placeholder = "••••••••"
+            value = {password}
+            onChange = {(e) => setPassword(e.target.value)}
           />
         </FieldGroup>
 

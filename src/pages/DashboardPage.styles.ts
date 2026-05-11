@@ -83,12 +83,6 @@ export const HeaderDescription = styled.p`
   }
 `;
 
-export const HeaderButtonGroup = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-`;
-
 export const PrimaryActionButton = styled.button`
   ${actionButtonBase};
   border: none;
@@ -332,6 +326,7 @@ export const MeetingTop = styled.div`
 
 export const MeetingLeft = styled.div`
   flex: 1;
+  min-width: 0;
 `;
 
 export const MeetingTitle = styled.h3`
@@ -387,20 +382,24 @@ export const MeetingActions = styled.div`
   display: flex;
   align-items: center;
   gap: 0.5rem;
+`;
 
-  button {
-    width: 2rem;
-    height: 2rem;
-    border: none;
-    border-radius: 0.375rem;
-    background: transparent;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    cursor: default;
-  }
+export const MeetingMenuWrapper = styled.div`
+  position: relative;
+`;
 
-  button:hover {
+export const MeetingMenuButton = styled.button`
+  width: 2rem;
+  height: 2rem;
+  border: none;
+  border-radius: 0.375rem;
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+
+  &:hover {
     background: #f3f4f6;
   }
 
@@ -411,12 +410,56 @@ export const MeetingActions = styled.div`
   }
 
   html.dark & {
-    button:hover {
+    &:hover {
       background: #1f2937;
     }
 
     .meeting-more-icon {
       color: #9ca3af;
+    }
+  }
+`;
+
+export const MeetingMenu = styled.div`
+  position: absolute;
+  top: calc(100% + 0.375rem);
+  right: 0;
+  min-width: 8rem;
+  padding: 0.375rem;
+  border-radius: 0.75rem;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
+  z-index: 20;
+
+  html.dark & {
+    border-color: #262626;
+    background: #1a1a1a;
+  }
+`;
+
+export const MeetingMenuItem = styled.button<{ $danger?: boolean }>`
+  width: 100%;
+  display: block;
+  padding: 0.625rem 0.75rem;
+  border: none;
+  border-radius: 0.5rem;
+  background: transparent;
+  text-align: left;
+  text-decoration: none;
+  font-size: 0.875rem;
+  color: ${({ $danger }) => ($danger ? '#dc2626' : '#111827')};
+  cursor: pointer;
+
+  &:hover {
+    background: #f3f4f6;
+  }
+
+  html.dark & {
+    color: ${({ $danger }) => ($danger ? '#f87171' : '#ffffff')};
+
+    &:hover {
+      background: #1f2937;
     }
   }
 `;

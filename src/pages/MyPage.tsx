@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { User, Mail, Shield, LogOut, Trash2 } from 'lucide-react';
 import {
   PageWrapper,
@@ -31,18 +31,27 @@ import {
   Separator,
   ActionStack,
   DangerButton,
-  FullWidthLink,
 } from './MyPage.styles';
+import { Link } from 'react-router-dom';
+import { useAuth } from '../contexts/useAuth';
 
 export default function MyPage() {
-  const user = {
-    name: '홍길동',
-    email: 'hong@acta.com',
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
+
+  const profile = {
+    name: user?.name ?? '사용자',
+    email: user?.email ?? '',
     joinDate: '2025년 12월 1일',
     plan: '무료 플랜',
     meetings: 24,
     todos: 47,
     hours: 32,
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate('/landing');
   };
 
   return (
@@ -55,14 +64,14 @@ export default function MyPage() {
       <Card>
         <ProfileSection>
           <ProfileAvatar>
-            <span>{user.name[0]}</span>
+            <span>{profile.name[0]}</span>
           </ProfileAvatar>
 
           <ProfileContent>
             <ProfileTop>
               <ProfileInfo>
-                <ProfileName>{user.name}</ProfileName>
-                <ProfileEmail>{user.email}</ProfileEmail>
+                <ProfileName>{profile.name}</ProfileName>
+                <ProfileEmail>{profile.email}</ProfileEmail>
               </ProfileInfo>
 
               <OutlineButton type = "button">
@@ -73,17 +82,17 @@ export default function MyPage() {
 
             <StatsRow>
               <StatItem>
-                <StatValue>{user.meetings}</StatValue>
+                <StatValue>{profile.meetings}</StatValue>
                 <StatLabel>회의</StatLabel>
               </StatItem>
 
               <StatItem>
-                <StatValue>{user.todos}</StatValue>
+                <StatValue>{profile.todos}</StatValue>
                 <StatLabel>Todo</StatLabel>
               </StatItem>
 
               <StatItem>
-                <StatValue>{user.hours}h</StatValue>
+                <StatValue>{profile.hours}h</StatValue>
                 <StatLabel>회의 시간</StatLabel>
               </StatItem>
             </StatsRow>
@@ -101,24 +110,24 @@ export default function MyPage() {
 
         <FormGroup>
           <Label htmlFor = "name">이름</Label>
-          <Input id = "name" defaultValue = {user.name} />
+          <Input id = "name" defaultValue = {profile.name} />
         </FormGroup>
 
         <FormGroup>
           <Label htmlFor = "email">이메일</Label>
-          <Input id = "email" type = "email" defaultValue = {user.email} disabled />
+          <Input id = "email" type = "email" defaultValue = {profile.email} disabled />
           <HelperText>이메일은 변경할 수 없습니다.</HelperText>
         </FormGroup>
 
         <FormGroup>
           <Label>가입일</Label>
-          <InfoText>{user.joinDate}</InfoText>
+          <InfoText>{profile.joinDate}</InfoText>
         </FormGroup>
 
         <FormGroup>
           <Label>플랜</Label>
           <PlanRow>
-            <InfoText>{user.plan}</InfoText>
+            <InfoText>{profile.plan}</InfoText>
             <PrimaryButton type = "button">플랜 업그레이드</PrimaryButton>
           </PlanRow>
         </FormGroup>
@@ -169,12 +178,10 @@ export default function MyPage() {
         </SectionHeader>
 
         <ActionStack>
-          <FullWidthLink to = "/landing">
-            <OutlineButton type = "button" $fullWidth $justifyStart>
-              <LogOut className = "button-icon" />
-              로그아웃
-            </OutlineButton>
-          </FullWidthLink>
+          <OutlineButton type = "button" $fullWidth $justifyStart onClick = {handleLogout}>
+            <LogOut className = "button-icon" />
+            로그아웃
+          </OutlineButton>
 
           <DangerButton type = "button">
             <Trash2 className = "button-icon" />
