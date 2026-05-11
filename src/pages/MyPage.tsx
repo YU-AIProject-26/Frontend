@@ -1,6 +1,16 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { User, Mail, Shield, LogOut, Trash2, Crown, Check } from 'lucide-react';
+import {
+  User,
+  Mail,
+  Shield,
+  LogOut,
+  Trash2,
+  Crown,
+  Check,
+  Smartphone,
+  KeyRound,
+} from 'lucide-react';
 import {
   PageWrapper,
   HeaderSection,
@@ -56,6 +66,21 @@ import {
   PlanModalButtonRow,
   PlanModalCancelButton,
   PlanModalConfirmButton,
+  TwoFactorModalOverlay,
+  TwoFactorModalCard,
+  TwoFactorModalIconBox,
+  TwoFactorModalTitle,
+  TwoFactorModalDescription,
+  TwoFactorInfoBox,
+  TwoFactorInfoRow,
+  TwoFactorInfoTextGroup,
+  TwoFactorInfoTitle,
+  TwoFactorInfoDescription,
+  TwoFactorFeatureList,
+  TwoFactorFeatureItem,
+  TwoFactorButtonRow,
+  TwoFactorCancelButton,
+  TwoFactorConfirmButton,
 } from './MyPage.styles';
 import { useAuth } from '../contexts/useAuth';
 
@@ -65,8 +90,10 @@ export default function MyPage() {
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isPlanModalOpen, setIsPlanModalOpen] = useState(false);
+  const [isTwoFactorModalOpen, setIsTwoFactorModalOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<'free' | 'pro'>('free');
   const [currentPlan, setCurrentPlan] = useState<'free' | 'pro'>('free');
+  const [isTwoFactorEnabled, setIsTwoFactorEnabled] = useState(false);
 
   const profile = {
     name: user?.name ?? '사용자',
@@ -109,6 +136,19 @@ export default function MyPage() {
   const handleConfirmPlanChange = () => {
     setCurrentPlan(selectedPlan);
     setIsPlanModalOpen(false);
+  };
+
+  const handleOpenTwoFactorModal = () => {
+    setIsTwoFactorModalOpen(true);
+  };
+
+  const handleCloseTwoFactorModal = () => {
+    setIsTwoFactorModalOpen(false);
+  };
+
+  const handleConfirmTwoFactor = () => {
+    setIsTwoFactorEnabled(true);
+    setIsTwoFactorModalOpen(false);
   };
 
   return (
@@ -224,10 +264,16 @@ export default function MyPage() {
             <PlanRow>
               <div>
                 <Label as = "p">2단계 인증</Label>
-                <HelperText>계정 보안을 강화하세요.</HelperText>
+                <HelperText>
+                  {isTwoFactorEnabled
+                    ? '2단계 인증이 활성화되어 있습니다.'
+                    : '계정 보안을 강화하세요.'}
+                </HelperText>
               </div>
 
-              <OutlineButton type = "button">설정하기</OutlineButton>
+              <OutlineButton type = "button" onClick = {handleOpenTwoFactorModal}>
+                {isTwoFactorEnabled ? '관리하기' : '설정하기'}
+              </OutlineButton>
             </PlanRow>
           </ActionStack>
         </Card>
@@ -372,6 +418,73 @@ export default function MyPage() {
             </PlanModalButtonRow>
           </PlanModalCard>
         </PlanModalOverlay>
+      )}
+
+      {isTwoFactorModalOpen && (
+        <TwoFactorModalOverlay onClick = {handleCloseTwoFactorModal}>
+          <TwoFactorModalCard onClick = {(e) => e.stopPropagation()}>
+            <TwoFactorModalIconBox>
+              <Shield />
+            </TwoFactorModalIconBox>
+
+            <TwoFactorModalTitle>2단계 인증을 설정하시겠습니까?</TwoFactorModalTitle>
+
+            <TwoFactorModalDescription>
+              로그인 시 한 번 더 인증 단계를 거쳐 계정 보안을 강화합니다.
+              <br />
+              모바일 기기 또는 인증 코드를 통해 안전하게 보호할 수 있습니다.
+            </TwoFactorModalDescription>
+
+            <TwoFactorInfoBox>
+              <TwoFactorInfoRow>
+                <Smartphone className = "info-icon" />
+
+                <TwoFactorInfoTextGroup>
+                  <TwoFactorInfoTitle>모바일 인증 지원</TwoFactorInfoTitle>
+                  <TwoFactorInfoDescription>
+                    휴대폰 인증 또는 인증 앱 기반으로 확장 가능한 구조입니다.
+                  </TwoFactorInfoDescription>
+                </TwoFactorInfoTextGroup>
+              </TwoFactorInfoRow>
+
+              <TwoFactorInfoRow>
+                <KeyRound className = "info-icon" />
+
+                <TwoFactorInfoTextGroup>
+                  <TwoFactorInfoTitle>추가 보안 코드 확인</TwoFactorInfoTitle>
+                  <TwoFactorInfoDescription>
+                    비밀번호 외에 한 번 더 확인 절차를 거쳐 계정을 보호합니다.
+                  </TwoFactorInfoDescription>
+                </TwoFactorInfoTextGroup>
+              </TwoFactorInfoRow>
+            </TwoFactorInfoBox>
+
+            <TwoFactorFeatureList>
+              <TwoFactorFeatureItem>
+                <Check className = "feature-icon" />
+                계정 도용 위험 감소
+              </TwoFactorFeatureItem>
+              <TwoFactorFeatureItem>
+                <Check className = "feature-icon" />
+                중요 정보 접근 보안 강화
+              </TwoFactorFeatureItem>
+              <TwoFactorFeatureItem>
+                <Check className = "feature-icon" />
+                추후 인증 방식 확장 가능
+              </TwoFactorFeatureItem>
+            </TwoFactorFeatureList>
+
+            <TwoFactorButtonRow>
+              <TwoFactorCancelButton type = "button" onClick = {handleCloseTwoFactorModal}>
+                취소
+              </TwoFactorCancelButton>
+
+              <TwoFactorConfirmButton type = "button" onClick = {handleConfirmTwoFactor}>
+                {isTwoFactorEnabled ? '유지하기' : '활성화하기'}
+              </TwoFactorConfirmButton>
+            </TwoFactorButtonRow>
+          </TwoFactorModalCard>
+        </TwoFactorModalOverlay>
       )}
     </>
   );
