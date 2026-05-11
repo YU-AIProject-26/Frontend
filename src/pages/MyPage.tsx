@@ -22,8 +22,10 @@ import {
   ProfileContent,
   ProfileTop,
   ProfileInfo,
+  ProfileNameRow,
   ProfileName,
   ProfileEmail,
+  AdminBadge,
   OutlineButton,
   StatsRow,
   StatItem,
@@ -112,6 +114,7 @@ export default function MyPage() {
   const [isTwoFactorEnabled, setIsTwoFactorEnabled] = useState(false);
 
   const trimmedNickname = nicknameInput.trim();
+  const isAdmin = user?.role === 'admin';
 
   const hasChanges = useMemo(() => {
     const nicknameChanged =
@@ -210,7 +213,10 @@ export default function MyPage() {
             <ProfileContent>
               <ProfileTop>
                 <ProfileInfo>
-                  <ProfileName>{profile.nickname}</ProfileName>
+                  <ProfileNameRow>
+                    <ProfileName>{profile.nickname}</ProfileName>
+                    {isAdmin && <AdminBadge>관리자</AdminBadge>}
+                  </ProfileNameRow>
                   <ProfileEmail>{profile.email}</ProfileEmail>
                 </ProfileInfo>
               </ProfileTop>

@@ -1011,3 +1011,28 @@ export const SaveModalConfirmButton = styled.button`
     );
   }
 `;
+
+export const ProfileNameRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+`;
+
+export const AdminBadge = styled.span`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 1.75rem;
+  padding: 0 0.75rem;
+  border-radius: 9999px;
+  background: rgba(37, 99, 235, 0.1);
+  color: ${({ theme }) => theme.colors.accent};
+  font-size: 0.75rem;
+  font-weight: 700;
+  white-space: nowrap;
+
+  html.dark & {
+    background: rgba(37, 99, 235, 0.18);
+  }
+`;
