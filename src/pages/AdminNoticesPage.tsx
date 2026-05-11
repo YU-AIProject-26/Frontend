@@ -1,5 +1,13 @@
 import { useMemo, useState } from 'react';
-import { ChevronRight, X, Megaphone, RotateCcw, Search, Pencil } from 'lucide-react';
+import {
+  ChevronRight,
+  X,
+  Megaphone,
+  RotateCcw,
+  Search,
+  Pencil,
+  AlertTriangle,
+} from 'lucide-react';
 import {
   AdminSubPageWrapper,
   SubPageHeader,
@@ -54,6 +62,7 @@ import {
   EditNoticeText,
   NoticeItemContent,
   NoticeItemActions,
+  WarningMessage,
 } from './AdminSubPage.styles';
 import AdminActionToast from '../components/AdminActionToast';
 
@@ -98,6 +107,9 @@ export default function AdminNoticesPage() {
 
   const [selectedNotice, setSelectedNotice] = useState<NoticeItemType | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+
+  const [pendingEditNotice, setPendingEditNotice] = useState<NoticeItemType | null>(null);
+  const [isChangeEditTargetModalOpen, setIsChangeEditTargetModalOpen] = useState(false);
 
   const [toast, setToast] = useState<{
     open: boolean;
@@ -167,6 +179,10 @@ export default function AdminNoticesPage() {
   }, [editingNotice, isFormValid, trimmedTitle, trimmedContent]);
 
   const isSubmitDisabled = !isFormValid || !hasChanged;
+  const hasDraftEditingInput =
+    editingId !== null &&
+    (trimmedTitle !== editingNotice?.title.trim() ||
+      trimmedContent !== editingNotice?.content.trim());
 
   const showToast = (message: string, variant: 'success' | 'error' = 'success') => {
     setToast({
@@ -194,6 +210,36 @@ export default function AdminNoticesPage() {
     setStatusFilter('all');
     setSortBy('created-desc');
     showToast('공지사항 관리 필터가 초기화되었습니다.', 'success');
+  };
+
+  const applyEditNotice = (notice: NoticeItemType) => {
+    setEditingId(notice.id);
+    setTitleInput(notice.title);
+    setContentInput(notice.content);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    showToast('수정할 공지사항을 불러왔습니다.', 'success');
+  };
+
+  const handleEditNotice = (notice: NoticeItemType) => {
+    if (editingId !== null && editingId !== notice.id && hasDraftEditingInput) {
+      setPendingEditNotice(notice);
+      setIsChangeEditTargetModalOpen(true);
+      return;
+    }
+
+    applyEditNotice(notice);
+  };
+
+  const closeChangeEditTargetModal = () => {
+    setPendingEditNotice(null);
+    setIsChangeEditTargetModalOpen(false);
+  };
+
+  const confirmChangeEditTarget = () => {
+    if (!pendingEditNotice) return;
+
+    applyEditNotice(pendingEditNotice);
+    closeChangeEditTargetModal();
   };
 
   const handleSaveDraft = () => {
@@ -264,14 +310,6 @@ export default function AdminNoticesPage() {
     resetForm();
   };
 
-  const handleEditNotice = (notice: NoticeItemType) => {
-    setEditingId(notice.id);
-    setTitleInput(notice.title);
-    setContentInput(notice.content);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    showToast('수정할 공지사항을 불러왔습니다.', 'success');
-  };
-
   const openDeleteModal = (notice: NoticeItemType) => {
     setSelectedNotice(notice);
     setIsDeleteModalOpen(true);
@@ -316,7 +354,7 @@ export default function AdminNoticesPage() {
           </SubPageTopRow>
         </SubPageHeader>
 
-        <SummaryRow>
+        <SummaryRow $columns = {3}>
           <SummaryCard>
             <SummaryLabel>전체 공지</SummaryLabel>
             <SummaryValue>{summary.total}</SummaryValue>
@@ -434,10 +472,7 @@ export default function AdminNoticesPage() {
             </EmptyStateBox>
           ) : (
             filteredNotices.map((item) => (
-              <NoticeItem
-                key = {item.id}
-                $active = {editingId === item.id}
-              >
+              <NoticeItem key = {item.id} $active = {editingId === item.id}>
                 <NoticeItemContent>
                   <NoticeItemTitle>{item.title}</NoticeItemTitle>
                   <NoticeItemMeta>
@@ -517,9 +552,10 @@ export default function AdminNoticesPage() {
               </InfoGrid>
 
               {editingId === selectedNotice.id && (
-                <ModalDescription>
-                  현재 수정 중인 공지사항을 삭제하면 입력 중이던 내용도 함께 초기화됩니다.
-                </ModalDescription>
+                <WarningMessage>
+                  <AlertTriangle className = "warning-icon" />
+                  <span>현재 수정 중인 공지사항을 삭제하면 입력 중이던 내용도 초기화됩니다.</span>
+                </WarningMessage>
               )}
             </ModalBody>
 
@@ -530,6 +566,53 @@ export default function AdminNoticesPage() {
 
               <ModalPrimaryButton type = "button" onClick = {handleDeleteNotice}>
                 삭제하기
+              </ModalPrimaryButton>
+            </ModalFooter>
+          </ModalCard>
+        </ModalOverlay>
+      )}
+
+      {isChangeEditTargetModalOpen && pendingEditNotice && (
+        <ModalOverlay onClick = {closeChangeEditTargetModal}>
+          <ModalCard onClick = {(e) => e.stopPropagation()}>
+            <ModalHeader>
+              <div>
+                <ModalTitle>다른 공지사항으로 이동하시겠습니까?</ModalTitle>
+                <ModalDescription>
+                  현재 수정 중인 입력 내용이 저장되지 않은 상태입니다.
+                </ModalDescription>
+              </div>
+
+              <ModalCloseButton type = "button" onClick = {closeChangeEditTargetModal}>
+                <X className = "close-icon" />
+              </ModalCloseButton>
+            </ModalHeader>
+
+            <ModalBody>
+              <InfoGrid>
+                <InfoItem>
+                  <InfoLabel>현재 수정 중</InfoLabel>
+                  <InfoValue>{editingNotice?.title}</InfoValue>
+                </InfoItem>
+
+                <InfoItem>
+                  <InfoLabel>이동할 공지</InfoLabel>
+                  <InfoValue>{pendingEditNotice.title}</InfoValue>
+                </InfoItem>
+              </InfoGrid>
+
+              <ModalDescription>
+                저장하지 않고 이동하면 현재 입력한 수정 내용은 사라집니다.
+              </ModalDescription>
+            </ModalBody>
+
+            <ModalFooter>
+              <ModalSecondaryButton type = "button" onClick = {closeChangeEditTargetModal}>
+                취소
+              </ModalSecondaryButton>
+
+              <ModalPrimaryButton type = "button" onClick = {confirmChangeEditTarget}>
+                이동하기
               </ModalPrimaryButton>
             </ModalFooter>
           </ModalCard>

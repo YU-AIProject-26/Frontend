@@ -553,9 +553,9 @@ export const EmptyStateText = styled.p`
   }
 `;
 
-export const SummaryRow = styled.div`
+export const SummaryRow = styled.div<{ $columns?: number }>`
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(${({ $columns = 4 }) => $columns}, minmax(0, 1fr));
   gap: 1rem;
   margin-bottom: 1rem;
 
@@ -776,8 +776,9 @@ export const FormSecondaryButton = styled.button`
 
 export const NoticeListCard = styled.section`
   ${cardBase};
-  padding: 1.25rem;
+  padding: 1.25rem 1.25rem 1.5rem;
   border-radius: 1rem;
+  overflow: visible;
 `;
 
 export const NoticeListTitle = styled.h2`
@@ -804,13 +805,15 @@ export const NoticeItem = styled.div<{ $active?: boolean }>`
     `
       border-radius: 0.875rem;
       padding: 1rem;
-      margin: 0 -0.25rem;
-      border: 1px solid ${theme.colors.accent};
+      margin: 0;
+      border: none;
+      box-shadow: inset 0 0 0 1px ${theme.colors.accent};
       background: rgba(37, 99, 235, 0.04);
     `}
 
   &:last-child {
     border-bottom: none;
+    margin-bottom: 0.25rem;
   }
 
   html.dark & {
@@ -923,4 +926,29 @@ export const NoticeItemContent = styled.div`
 
 export const NoticeItemActions = styled.div`
   flex-shrink: 0;
+`;
+
+export const WarningMessage = styled.div`
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin-top: 0.875rem;
+  padding: 0.875rem 1rem;
+  border-radius: 0.875rem;
+  background: rgba(245, 158, 11, 0.1);
+  color: #b45309;
+  font-size: 0.875rem;
+  line-height: 1.5;
+
+  .warning-icon {
+    width: 1rem;
+    height: 1rem;
+    flex-shrink: 0;
+    margin-top: 0.125rem;
+  }
+
+  html.dark & {
+    background: rgba(245, 158, 11, 0.16);
+    color: #fbbf24;
+  }
 `;
