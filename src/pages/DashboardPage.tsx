@@ -21,7 +21,6 @@ import {
   HeaderLeft,
   HeaderTitle,
   HeaderDescription,
-  HeaderButtonGroup,
   PrimaryActionButton,
   OutlineActionButton,
   EmptyCard,
@@ -218,17 +217,6 @@ export default function DashboardPage() {
             회의 분석과 Todo를 한눈에 확인하세요
           </HeaderDescription>
         </HeaderLeft>
-
-        <HeaderButtonGroup>
-          <PrimaryActionButton type = "button">
-            <Mic className = "action-icon" />
-            녹음하기
-          </PrimaryActionButton>
-          <OutlineActionButton type = "button">
-            <Upload className = "action-icon" />
-            파일 업로드
-          </OutlineActionButton>
-        </HeaderButtonGroup>
       </HeaderSection>
 
       <StatsGrid>

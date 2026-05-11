@@ -83,12 +83,6 @@ export const HeaderDescription = styled.p`
   }
 `;
 
-export const HeaderButtonGroup = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-`;
-
 export const PrimaryActionButton = styled.button`
   ${actionButtonBase};
   border: none;
