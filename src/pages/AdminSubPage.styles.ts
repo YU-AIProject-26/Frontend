@@ -282,85 +282,103 @@ export const TableActionButton = styled.button`
   }
 `;
 
-export const FormCard = styled.section`
-  ${cardBase};
-  padding: 1.25rem;
-  border-radius: 1rem;
-  margin-bottom: 1rem;
-`;
-
-export const FormGroup = styled.div`
+export const ModalOverlay = styled.div`
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.28);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-
-  & + & {
-    margin-top: 1rem;
-  }
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  z-index: 1000;
 `;
 
-export const FormLabel = styled.label`
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: #111827;
-
-  html.dark & {
-    color: #ffffff;
-  }
-`;
-
-export const FormInput = styled.input`
-  height: 2.875rem;
-  padding: 0 1rem;
-  border-radius: 0.75rem;
+export const ModalCard = styled.div`
+  width: 100%;
+  max-width: 34rem;
+  border-radius: 1rem;
   border: 1px solid #e5e7eb;
   background: #ffffff;
-  color: #111827;
-  font-size: 0.875rem;
-  outline: none;
-
-  &:focus {
-    border-color: ${({ theme }) => theme.colors.accent};
-  }
+  box-shadow: 0 20px 48px rgba(15, 23, 42, 0.18);
+  overflow: hidden;
 
   html.dark & {
     border-color: #262626;
     background: #111827;
+  }
+`;
+
+export const ModalHeader = styled.div`
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.5rem 1.5rem 0;
+`;
+
+export const ModalTitle = styled.h2`
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #111827;
+
+  html.dark & {
     color: #ffffff;
   }
 `;
 
-export const FormTextArea = styled.textarea`
-  min-height: 180px;
-  padding: 1rem;
-  border-radius: 0.75rem;
-  border: 1px solid #e5e7eb;
-  background: #ffffff;
-  color: #111827;
+export const ModalDescription = styled.p`
+  margin: 0.375rem 0 0;
   font-size: 0.875rem;
   line-height: 1.6;
-  resize: vertical;
-  outline: none;
-
-  &:focus {
-    border-color: ${({ theme }) => theme.colors.accent};
-  }
+  color: #6b7280;
 
   html.dark & {
-    border-color: #262626;
-    background: #111827;
-    color: #ffffff;
+    color: #9ca3af;
   }
 `;
 
-export const FormButtonRow = styled.div`
+export const ModalCloseButton = styled.button`
+  width: 2.25rem;
+  height: 2.25rem;
+  border: none;
+  border-radius: 0.625rem;
+  background: transparent;
+  color: #6b7280;
+  flex-shrink: 0;
+
+  .close-icon {
+    width: 1.125rem;
+    height: 1.125rem;
+  }
+
+  &:hover {
+    background: #f3f4f6;
+  }
+
+  html.dark & {
+    color: #9ca3af;
+
+    &:hover {
+      background: #1f2937;
+    }
+  }
+`;
+
+export const ModalBody = styled.div`
+  padding: 1.25rem 1.5rem;
+`;
+
+export const ModalFooter = styled.div`
   display: flex;
   justify-content: flex-end;
   gap: 0.75rem;
-  margin-top: 1.25rem;
+  padding: 0 1.5rem 1.5rem;
 `;
 
-export const FormPrimaryButton = styled.button`
+export const ModalPrimaryButton = styled.button`
   height: 2.75rem;
   padding: 0 1rem;
   border-radius: 0.75rem;
@@ -379,7 +397,7 @@ export const FormPrimaryButton = styled.button`
   }
 `;
 
-export const FormSecondaryButton = styled.button`
+export const ModalSecondaryButton = styled.button`
   height: 2.75rem;
   padding: 0 1rem;
   border-radius: 0.75rem;
@@ -404,16 +422,40 @@ export const FormSecondaryButton = styled.button`
   }
 `;
 
-export const NoticeListCard = styled.section`
-  ${cardBase};
-  padding: 1.25rem;
-  border-radius: 1rem;
+export const InfoGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
+  }
 `;
 
-export const NoticeListTitle = styled.h2`
-  margin: 0 0 1rem;
-  font-size: 1.125rem;
-  font-weight: 700;
+export const InfoItem = styled.div`
+  padding: 1rem;
+  border-radius: 0.875rem;
+  background: #f9fafb;
+
+  html.dark & {
+    background: #0f0f0f;
+  }
+`;
+
+export const InfoLabel = styled.p`
+  margin: 0;
+  font-size: 0.75rem;
+  color: #6b7280;
+
+  html.dark & {
+    color: #9ca3af;
+  }
+`;
+
+export const InfoValue = styled.div`
+  margin-top: 0.375rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
   color: #111827;
 
   html.dark & {
@@ -421,38 +463,72 @@ export const NoticeListTitle = styled.h2`
   }
 `;
 
-export const NoticeItem = styled.div`
+export const RoleOptionList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+`;
+
+export const RoleOptionButton = styled.button<{ $selected?: boolean }>`
+  width: 100%;
+  height: 3.25rem;
+  padding: 0 1rem;
+  border-radius: 0.875rem;
+  border: 1px solid
+    ${({ $selected, theme }) =>
+      $selected ? theme.colors.accent : '#e5e7eb'};
+  background: ${({ $selected }) =>
+    $selected ? 'rgba(37, 99, 235, 0.06)' : '#ffffff'};
+  color: #111827;
+  font-size: 0.9375rem;
+  font-weight: 600;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  padding: 1rem 0;
-  border-bottom: 1px solid #f3f4f6;
+  gap: 0.75rem;
 
-  &:last-child {
-    border-bottom: none;
-    padding-bottom: 0;
+  .role-icon {
+    width: 1rem;
+    height: 1rem;
+    color: ${({ theme }) => theme.colors.accent};
+  }
+
+  &:hover {
+    border-color: ${({ theme }) => theme.colors.accent};
+    background: rgba(37, 99, 235, 0.06);
   }
 
   html.dark & {
-    border-bottom-color: #262626;
-  }
-`;
-
-export const NoticeItemTitle = styled.h3`
-  margin: 0;
-  font-size: 0.95rem;
-  font-weight: 700;
-  color: #111827;
-
-  html.dark & {
+    border-color: ${({ $selected, theme }) =>
+      $selected ? theme.colors.accent : '#262626'};
+    background: ${({ $selected }) =>
+      $selected ? 'rgba(37, 99, 235, 0.12)' : '#111827'};
     color: #ffffff;
+
+    &:hover {
+      border-color: ${({ theme }) => theme.colors.accent};
+      background: rgba(37, 99, 235, 0.12);
+    }
   }
 `;
 
-export const NoticeItemMeta = styled.p`
-  margin: 0.375rem 0 0;
-  font-size: 0.8125rem;
+export const EmptyStateBox = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1rem;
+
+  .empty-icon {
+    width: 2rem;
+    height: 2rem;
+    color: #9ca3af;
+    margin-bottom: 0.75rem;
+  }
+`;
+
+export const EmptyStateText = styled.p`
+  margin: 0;
+  font-size: 0.9375rem;
   color: #6b7280;
 
   html.dark & {
