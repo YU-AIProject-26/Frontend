@@ -49,15 +49,13 @@ table {
 	border-spacing: 0;
 }
 
-/* 추가 설정들 */
-
 * {
-    box-sizing: border-box; /* 패딩을 줘도 박스가 안 커짐 */
+    box-sizing: border-box;
   }
 
   a {
-    text-decoration: none; /* 링크 밑줄 제거 */
-    color: inherit;       /* 링크 색상을 부모 글자색이랑 맞춤 */
+    text-decoration: none;
+    color: inherit;
   }
 `;
 export default ResetStyle;
