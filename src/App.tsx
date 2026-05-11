@@ -18,7 +18,7 @@ import MyPage from './pages/MyPage';
 import SettingsPage from './pages/SettingsPage';
 import NotificationsPage from './pages/NotificationsPage';
 import MeetingCreatePage from './pages/MeetingCreatePage';
-import TodoPage from './pages/ToDoPage';
+import TodoPage from './pages/TodoPage';
 
 export default function App() {
   return (
