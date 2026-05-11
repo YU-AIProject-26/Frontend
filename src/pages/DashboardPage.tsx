@@ -104,7 +104,7 @@ export default function DashboardPage() {
     },
   ];
 
-  const todos = [
+  const [todos, setTodos] = useState([
     {
       id: 1,
       text: '마케팅 캠페인 예산안 작성',
@@ -133,13 +133,23 @@ export default function DashboardPage() {
       dueDate: '4월 9일',
       completed: false,
     },
-  ];
+  ]);
 
   const upcomingEvents = [
     { date: '4월 8일', time: '10:00', title: '팀 스탠드업' },
     { date: '4월 10일', time: '14:00', title: '월간 리뷰' },
     { date: '4월 12일', time: '15:00', title: '1:1 미팅' },
   ];
+
+  const toggleTodoCompleted = (id: number) => {
+    setTodos((prev) =>
+      prev.map((todo) =>
+        todo.id === id
+          ? { ...todo, completed: !todo.completed }
+          : todo
+      )
+    );
+  };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -226,7 +236,7 @@ export default function DashboardPage() {
             <FileText className = "stat-icon" />
           </StatHeader>
           <StatValue>24</StatValue>
-          <StatSubText $accent>+3 이번 주</StatSubText>
+          <StatSubText $accent = {true}>+3 이번 주</StatSubText>
         </StatCard>
 
         <StatCard>
@@ -244,7 +254,7 @@ export default function DashboardPage() {
             <CalendarDays className = "stat-icon" />
           </StatHeader>
           <StatValue>8</StatValue>
-          <StatSubText $accent>이번 주 3개</StatSubText>
+          <StatSubText $accent = {true}>이번 주 3개</StatSubText>
         </StatCard>
 
         <StatCard>
@@ -260,7 +270,7 @@ export default function DashboardPage() {
       <MainCard>
         <SectionHeader>
           <SectionTitle>최근 회의</SectionTitle>
-          <SectionLinkButton to="/dashboard/meetings">
+          <SectionLinkButton to = "/dashboard/meetings">
             모두 보기
             <ArrowRight className = "link-arrow" />
           </SectionLinkButton>
@@ -311,7 +321,11 @@ export default function DashboardPage() {
           <TodoList>
             {todos.slice(0, 5).map((todo) => (
               <TodoItem key = {todo.id}>
-                <TodoCheck type = "checkbox" checked = {todo.completed} readOnly />
+                <TodoCheck
+                  type = "checkbox"
+                  checked = {todo.completed}
+                  onChange = {() => toggleTodoCompleted(todo.id)}
+                />
                 <TodoContent>
                   <TodoText $completed = {todo.completed}>{todo.text}</TodoText>
                   <TodoMetaRow>
