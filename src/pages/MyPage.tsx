@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Mail,
@@ -9,6 +9,7 @@ import {
   Check,
   Smartphone,
   KeyRound,
+  CheckCircle2,
 } from 'lucide-react';
 import {
   PageWrapper,
@@ -80,6 +81,13 @@ import {
   TwoFactorButtonRow,
   TwoFactorCancelButton,
   TwoFactorConfirmButton,
+  SaveModalOverlay,
+  SaveModalCard,
+  SaveModalIconBox,
+  SaveModalTitle,
+  SaveModalDescription,
+  SaveModalButtonRow,
+  SaveModalConfirmButton,
 } from './MyPage.styles';
 import { useAuth } from '../contexts/useAuth';
 
@@ -87,16 +95,35 @@ export default function MyPage() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
 
+  const initialNickname = user?.name ?? '사용자';
+  const initialEmail = user?.email ?? '';
+
+  const [savedNickname, setSavedNickname] = useState(initialNickname);
+  const [nicknameInput, setNicknameInput] = useState(initialNickname);
+
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isPlanModalOpen, setIsPlanModalOpen] = useState(false);
   const [isTwoFactorModalOpen, setIsTwoFactorModalOpen] = useState(false);
+  const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
+
   const [selectedPlan, setSelectedPlan] = useState<'free' | 'pro'>('free');
+  const [savedPlan, setSavedPlan] = useState<'free' | 'pro'>('free');
   const [currentPlan, setCurrentPlan] = useState<'free' | 'pro'>('free');
   const [isTwoFactorEnabled, setIsTwoFactorEnabled] = useState(false);
 
+  const trimmedNickname = nicknameInput.trim();
+
+  const hasChanges = useMemo(() => {
+    const nicknameChanged =
+      trimmedNickname.length > 0 && trimmedNickname !== savedNickname;
+    const planChanged = currentPlan !== savedPlan;
+
+    return nicknameChanged || planChanged;
+  }, [trimmedNickname, savedNickname, currentPlan, savedPlan]);
+
   const profile = {
-    nickname: user?.name ?? '사용자',
-    email: user?.email ?? '',
+    nickname: savedNickname,
+    email: initialEmail,
     joinDate: '2025년 12월 1일',
     plan: currentPlan === 'free' ? '무료 플랜' : 'Pro 플랜',
     meetings: 24,
@@ -148,6 +175,22 @@ export default function MyPage() {
   const handleConfirmTwoFactor = () => {
     setIsTwoFactorEnabled(true);
     setIsTwoFactorModalOpen(false);
+  };
+
+  const handleSaveChanges = () => {
+    if (!hasChanges) return;
+
+    if (trimmedNickname.length > 0) {
+      setSavedNickname(trimmedNickname);
+      setNicknameInput(trimmedNickname);
+    }
+
+    setSavedPlan(currentPlan);
+    setIsSaveModalOpen(true);
+  };
+
+  const handleCloseSaveModal = () => {
+    setIsSaveModalOpen(false);
   };
 
   return (
@@ -202,7 +245,11 @@ export default function MyPage() {
 
           <FormGroup>
             <Label htmlFor = "nickname">닉네임</Label>
-            <Input id = "nickname" defaultValue = {profile.nickname} />
+            <Input
+              id = "nickname"
+              value = {nicknameInput}
+              onChange = {(e) => setNicknameInput(e.target.value)}
+            />
           </FormGroup>
 
           <FormGroup>
@@ -228,7 +275,12 @@ export default function MyPage() {
 
           <Separator />
 
-          <PrimaryButton type = "button" $fullWidth>
+          <PrimaryButton
+            type = "button"
+            $fullWidth
+            onClick = {handleSaveChanges}
+            disabled = {!hasChanges}
+          >
             변경사항 저장
           </PrimaryButton>
         </Card>
@@ -479,6 +531,30 @@ export default function MyPage() {
             </TwoFactorButtonRow>
           </TwoFactorModalCard>
         </TwoFactorModalOverlay>
+      )}
+
+      {isSaveModalOpen && (
+        <SaveModalOverlay onClick = {handleCloseSaveModal}>
+          <SaveModalCard onClick = {(e) => e.stopPropagation()}>
+            <SaveModalIconBox>
+              <CheckCircle2 />
+            </SaveModalIconBox>
+
+            <SaveModalTitle>변경사항이 저장되었습니다</SaveModalTitle>
+
+            <SaveModalDescription>
+              프로필 정보가 정상적으로 반영되었습니다.
+              <br />
+              필요한 경우 다시 수정할 수 있습니다.
+            </SaveModalDescription>
+
+            <SaveModalButtonRow>
+              <SaveModalConfirmButton type = "button" onClick = {handleCloseSaveModal}>
+                확인
+              </SaveModalConfirmButton>
+            </SaveModalButtonRow>
+          </SaveModalCard>
+        </SaveModalOverlay>
       )}
     </>
   );
