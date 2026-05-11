@@ -7,6 +7,7 @@ import {
   CheckCircle2,
   AlertTriangle,
   X,
+  RotateCcw,
 } from 'lucide-react';
 import {
   AdminSubPageWrapper,
@@ -46,10 +47,18 @@ import {
   OptionButton,
   EmptyStateBox,
   EmptyStateText,
+  ToolbarActions,
+  ToolbarButton,
+  ResultMeta,
 } from './AdminSubPage.styles';
 import AdminActionToast from '../components/AdminActionToast';
 
 type MeetingStatus = '분석 완료' | '분석중' | '실패';
+type MeetingSort =
+  | 'created-desc'
+  | 'created-asc'
+  | 'title-asc'
+  | 'todos-desc';
 
 type MeetingItem = {
   id: number;
@@ -117,6 +126,7 @@ export default function AdminMeetingsPage() {
 
   const [searchKeyword, setSearchKeyword] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | MeetingStatus>('all');
+  const [sortBy, setSortBy] = useState<MeetingSort>('created-desc');
 
   const [selectedMeeting, setSelectedMeeting] = useState<MeetingItem | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
@@ -134,7 +144,7 @@ export default function AdminMeetingsPage() {
   });
 
   const filteredMeetings = useMemo(() => {
-    return meetings.filter((meeting) => {
+    const result = meetings.filter((meeting) => {
       const keyword = searchKeyword.trim().toLowerCase();
 
       const matchesKeyword =
@@ -148,7 +158,23 @@ export default function AdminMeetingsPage() {
 
       return matchesKeyword && matchesStatus;
     });
-  }, [meetings, searchKeyword, statusFilter]);
+
+    return [...result].sort((a, b) => {
+      if (sortBy === 'created-desc') {
+        return b.createdAt.localeCompare(a.createdAt);
+      }
+
+      if (sortBy === 'created-asc') {
+        return a.createdAt.localeCompare(b.createdAt);
+      }
+
+      if (sortBy === 'title-asc') {
+        return a.title.localeCompare(b.title, 'ko');
+      }
+
+      return b.todos - a.todos;
+    });
+  }, [meetings, searchKeyword, statusFilter, sortBy]);
 
   const summary = useMemo(() => {
     return {
@@ -172,6 +198,13 @@ export default function AdminMeetingsPage() {
       ...prev,
       open: false,
     }));
+  };
+
+  const resetToolbar = () => {
+    setSearchKeyword('');
+    setStatusFilter('all');
+    setSortBy('created-desc');
+    showToast('회의 관리 필터가 초기화되었습니다.', 'success');
   };
 
   const openDetailModal = (meeting: MeetingItem) => {
@@ -289,7 +322,26 @@ export default function AdminMeetingsPage() {
             <option value = "분석중">분석중</option>
             <option value = "실패">실패</option>
           </FilterSelect>
+
+          <FilterSelect
+            value = {sortBy}
+            onChange = {(e) => setSortBy(e.target.value as MeetingSort)}
+          >
+            <option value = "created-desc">최신 생성순</option>
+            <option value = "created-asc">오래된 생성순</option>
+            <option value = "title-asc">회의 제목순</option>
+            <option value = "todos-desc">Todo 많은순</option>
+          </FilterSelect>
+
+          <ToolbarActions>
+            <ToolbarButton type = "button" onClick = {resetToolbar}>
+              <RotateCcw className = "toolbar-icon" />
+              초기화
+            </ToolbarButton>
+          </ToolbarActions>
         </SearchFilterRow>
+
+        <ResultMeta>현재 조건에 맞는 회의 {filteredMeetings.length}건</ResultMeta>
 
         <DataCard>
           {filteredMeetings.length === 0 ? (
@@ -506,7 +558,7 @@ export default function AdminMeetingsPage() {
               <div>
                 <ModalTitle>회의를 삭제하시겠습니까?</ModalTitle>
                 <ModalDescription>
-                  삭제한 회의는 프론트 목록에서 바로 사라지며 되돌릴 수 없습니다
+                  삭제한 회의는 프론트 목록에서 바로 사라지며 복구할 수 없습니다
                 </ModalDescription>
               </div>
 
