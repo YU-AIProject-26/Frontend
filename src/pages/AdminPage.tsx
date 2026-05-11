@@ -1,4 +1,3 @@
-import { Link } from 'react-router-dom';
 import {
   Users,
   UserPlus,
@@ -6,11 +5,9 @@ import {
   CheckSquare,
   MessageSquare,
   Activity,
-  Shield,
   ChevronRight,
   Clock3,
   AlertTriangle,
-  Crown,
 } from 'lucide-react';
 import {
   PageWrapper,
@@ -421,10 +418,10 @@ export default function AdminPage() {
                 </QuickActionFooter>
               </QuickActionCard>
 
-              <QuickActionCard to = "/contact">
-                <QuickActionTitle>문의 페이지 확인</QuickActionTitle>
+              <QuickActionCard to = "/admin/inquiries">
+                <QuickActionTitle>문의 / 신고 관리</QuickActionTitle>
                 <QuickActionDescription>
-                  사용자 문의 폼과 접수 흐름을 직접 확인합니다
+                  문의, 신고, 피드백 항목을 확인하고 처리합니다
                 </QuickActionDescription>
                 <QuickActionFooter>
                   이동
@@ -433,9 +430,9 @@ export default function AdminPage() {
               </QuickActionCard>
 
               <QuickActionCard to = "/admin/notices">
-                <QuickActionTitle>공지 등록 준비</QuickActionTitle>
+                <QuickActionTitle>공지사항 관리</QuickActionTitle>
                 <QuickActionDescription>
-                  추후 공지사항 관리 기능과 연결할 수 있습니다
+                  공지 등록, 수정, 삭제 기능을 관리합니다
                 </QuickActionDescription>
                 <QuickActionFooter>
                   이동

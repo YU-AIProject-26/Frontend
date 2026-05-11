@@ -20,6 +20,10 @@ import NotificationsPage from './pages/NotificationsPage';
 import MeetingCreatePage from './pages/MeetingCreatePage';
 import TodoPage from './pages/TodoPage';
 import AdminPage from './pages/AdminPage';
+import AdminUsersPage from './pages/AdminUsersPage';
+import AdminMeetingsPage from './pages/AdminMeetingsPage';
+import AdminInquiriesPage from './pages/AdminInquiriesPage';
+import AdminNoticesPage from './pages/AdminNoticesPage';
 import { useAuth } from './contexts/useAuth';
 
 export default function App() {
@@ -120,10 +124,35 @@ export default function App() {
           <Route path = "/settings" element = {<SettingsPage />} />
           <Route path = "/meetings/create" element = {<MeetingCreatePage />} />
           <Route path = "/todo" element = {<TodoPage />} />
+
           <Route
             path = "/admin"
             element = {
               isAdmin ? <AdminPage /> : <Navigate to = "/not-found" replace />
+            }
+          />
+          <Route
+            path = "/admin/users"
+            element = {
+              isAdmin ? <AdminUsersPage /> : <Navigate to = "/not-found" replace />
+            }
+          />
+          <Route
+            path = "/admin/meetings"
+            element = {
+              isAdmin ? <AdminMeetingsPage /> : <Navigate to = "/not-found" replace />
+            }
+          />
+          <Route
+            path = "/admin/inquiries"
+            element = {
+              isAdmin ? <AdminInquiriesPage /> : <Navigate to = "/not-found" replace />
+            }
+          />
+          <Route
+            path = "/admin/notices"
+            element = {
+              isAdmin ? <AdminNoticesPage /> : <Navigate to = "/not-found" replace />
             }
           />
         </Route>
