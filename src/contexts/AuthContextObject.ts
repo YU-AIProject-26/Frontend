@@ -3,6 +3,7 @@ import { createContext } from 'react';
 type AuthUser = {
   email: string;
   name: string;
+  role: 'user' | 'admin';
 };
 
 type LoginPayload = {

@@ -131,6 +131,7 @@ export default function Header() {
   });
 
   const unreadCount = notifications.filter((item) => item.unread).length;
+  const isAdmin = user?.role === 'admin';
 
   const closeAllDropdowns = () => {
     setIsNotificationOpen(false);
@@ -330,12 +331,20 @@ export default function Header() {
                 </ProfileInfo>
 
                 <ProfileMenuList>
+                  {isAdmin && (
+                    <ProfileMenuLink to = "/admin" onClick = {closeAllDropdowns}>
+                      관리자 페이지
+                    </ProfileMenuLink>
+                  )}
+
                   <ProfileMenuLink to = "/my" onClick = {closeAllDropdowns}>
                     마이페이지
                   </ProfileMenuLink>
+
                   <ProfileMenuLink to = "/settings" onClick = {closeAllDropdowns}>
                     환경설정
                   </ProfileMenuLink>
+
                   <ProfileMenuLink
                     to = "/landing"
                     $danger

@@ -3,13 +3,14 @@ import type { ReactNode } from 'react';
 import {
   AUTH_STORAGE_KEY,
   ONBOARDING_STORAGE_KEY,
-  TEMP_USER,
+  TEMP_USERS,
 } from '../auth/tempAuth';
 import { AuthContext } from './AuthContextObject';
 
 type AuthUser = {
   email: string;
   name: string;
+  role: 'user' | 'admin';
 };
 
 type LoginPayload = {
@@ -42,10 +43,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const login = ({ email, password }: LoginPayload) => {
     const normalizedEmail = email.trim().toLowerCase();
 
-    if (
-      normalizedEmail !== TEMP_USER.email.toLowerCase() ||
-      password !== TEMP_USER.password
-    ) {
+    const matchedUser = TEMP_USERS.find(
+      (tempUser) =>
+        tempUser.email.toLowerCase() === normalizedEmail &&
+        tempUser.password === password
+    );
+
+    if (!matchedUser) {
       return {
         success: false,
         message: '이메일 또는 비밀번호가 올바르지 않습니다.',
@@ -53,8 +57,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
 
     const loggedInUser: AuthUser = {
-      email: TEMP_USER.email,
-      name: TEMP_USER.name,
+      email: matchedUser.email,
+      name: matchedUser.name,
+      role: matchedUser.role,
     };
 
     setUser(loggedInUser);
