@@ -7,7 +7,6 @@ import {
   CheckCircle2,
   Clock3,
   X,
-  FileText,
 } from 'lucide-react';
 import {
   AdminSubPageWrapper,
@@ -51,6 +50,7 @@ import {
   FormLabel,
   FormTextArea,
 } from './AdminSubPage.styles';
+import AdminActionToast from '../components/AdminActionToast';
 
 type InquiryType = '문의' | '신고' | '피드백';
 type InquiryStatus = '대기' | '처리중' | '완료';
@@ -119,6 +119,16 @@ export default function AdminInquiriesPage() {
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
 
+  const [toast, setToast] = useState<{
+    open: boolean;
+    message: string;
+    variant: 'success' | 'error';
+  }>({
+    open: false,
+    message: '',
+    variant: 'success',
+  });
+
   const filteredInquiries = useMemo(() => {
     return inquiries.filter((item) => {
       const keyword = searchKeyword.trim().toLowerCase();
@@ -145,6 +155,21 @@ export default function AdminInquiriesPage() {
       done: inquiries.filter((item) => item.status === '완료').length,
     };
   }, [inquiries]);
+
+  const showToast = (message: string, variant: 'success' | 'error' = 'success') => {
+    setToast({
+      open: true,
+      message,
+      variant,
+    });
+  };
+
+  const closeToast = () => {
+    setToast((prev) => ({
+      ...prev,
+      open: false,
+    }));
+  };
 
   const openDetailModal = (item: InquiryItem) => {
     setSelectedInquiry(item);
@@ -173,12 +198,11 @@ export default function AdminInquiriesPage() {
 
     setInquiries((prev) =>
       prev.map((item) =>
-        item.id === selectedInquiry.id
-          ? { ...item, memo: memoInput }
-          : item
+        item.id === selectedInquiry.id ? { ...item, memo: memoInput } : item
       )
     );
 
+    showToast('관리자 메모가 저장되었습니다.', 'success');
     closeDetailModal();
   };
 
@@ -187,12 +211,11 @@ export default function AdminInquiriesPage() {
 
     setInquiries((prev) =>
       prev.map((item) =>
-        item.id === selectedInquiry.id
-          ? { ...item, status: nextStatus }
-          : item
+        item.id === selectedInquiry.id ? { ...item, status: nextStatus } : item
       )
     );
 
+    showToast(`${selectedInquiry.title} 항목의 상태가 ${nextStatus}로 변경되었습니다.`, 'success');
     closeStatusModal();
   };
 
@@ -220,17 +243,14 @@ export default function AdminInquiriesPage() {
             <SummaryLabel>전체 접수</SummaryLabel>
             <SummaryValue>{summary.total}</SummaryValue>
           </SummaryCard>
-
           <SummaryCard>
             <SummaryLabel>대기</SummaryLabel>
             <SummaryValue>{summary.pending}</SummaryValue>
           </SummaryCard>
-
           <SummaryCard>
             <SummaryLabel>처리중</SummaryLabel>
             <SummaryValue>{summary.processing}</SummaryValue>
           </SummaryCard>
-
           <SummaryCard>
             <SummaryLabel>완료</SummaryLabel>
             <SummaryValue>{summary.done}</SummaryValue>
@@ -249,9 +269,7 @@ export default function AdminInquiriesPage() {
 
           <FilterSelect
             value = {typeFilter}
-            onChange = {(e) =>
-              setTypeFilter(e.target.value as 'all' | InquiryType)
-            }
+            onChange = {(e) => setTypeFilter(e.target.value as 'all' | InquiryType)}
           >
             <option value = "all">전체 유형</option>
             <option value = "문의">문의</option>
@@ -261,9 +279,7 @@ export default function AdminInquiriesPage() {
 
           <FilterSelect
             value = {statusFilter}
-            onChange = {(e) =>
-              setStatusFilter(e.target.value as 'all' | InquiryStatus)
-            }
+            onChange = {(e) => setStatusFilter(e.target.value as 'all' | InquiryStatus)}
           >
             <option value = "all">전체 상태</option>
             <option value = "대기">대기</option>
@@ -307,10 +323,8 @@ export default function AdminInquiriesPage() {
                         {item.type}
                       </TableBadge>
                     </td>
-
                     <td>{item.title}</td>
                     <td>{item.author}</td>
-
                     <td>
                       <TableBadge
                         $variant = {
@@ -324,9 +338,7 @@ export default function AdminInquiriesPage() {
                         {item.status}
                       </TableBadge>
                     </td>
-
                     <td>{item.createdAt}</td>
-
                     <td>
                       <TableActionRow>
                         <TableActionButton
@@ -504,6 +516,13 @@ export default function AdminInquiriesPage() {
           </ModalCard>
         </ModalOverlay>
       )}
+
+      <AdminActionToast
+        open = {toast.open}
+        message = {toast.message}
+        variant = {toast.variant}
+        onClose = {closeToast}
+      />
     </>
   );
 }

@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { ChevronRight, X, Megaphone, Trash2, PenSquare } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { ChevronRight, X, Megaphone } from 'lucide-react';
 import {
   AdminSubPageWrapper,
   SubPageHeader,
@@ -44,6 +44,7 @@ import {
   InfoValue,
   TableBadge,
 } from './AdminSubPage.styles';
+import AdminActionToast from '../components/AdminActionToast';
 
 type NoticeStatus = '게시중' | '임시저장';
 
@@ -82,10 +83,37 @@ export default function AdminNoticesPage() {
   const [selectedNotice, setSelectedNotice] = useState<NoticeItemType | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
-  const summary = {
-    total: notices.length,
-    published: notices.filter((item) => item.status === '게시중').length,
-    draft: notices.filter((item) => item.status === '임시저장').length,
+  const [toast, setToast] = useState<{
+    open: boolean;
+    message: string;
+    variant: 'success' | 'error';
+  }>({
+    open: false,
+    message: '',
+    variant: 'success',
+  });
+
+  const summary = useMemo(() => {
+    return {
+      total: notices.length,
+      published: notices.filter((item) => item.status === '게시중').length,
+      draft: notices.filter((item) => item.status === '임시저장').length,
+    };
+  }, [notices]);
+
+  const showToast = (message: string, variant: 'success' | 'error' = 'success') => {
+    setToast({
+      open: true,
+      message,
+      variant,
+    });
+  };
+
+  const closeToast = () => {
+    setToast((prev) => ({
+      ...prev,
+      open: false,
+    }));
   };
 
   const resetForm = () => {
@@ -98,7 +126,10 @@ export default function AdminNoticesPage() {
     const trimmedTitle = titleInput.trim();
     const trimmedContent = contentInput.trim();
 
-    if (!trimmedTitle || !trimmedContent) return;
+    if (!trimmedTitle || !trimmedContent) {
+      showToast('공지 제목과 내용을 모두 입력해주세요.', 'error');
+      return;
+    }
 
     if (editingId !== null) {
       setNotices((prev) =>
@@ -113,6 +144,7 @@ export default function AdminNoticesPage() {
             : notice
         )
       );
+      showToast('공지사항이 임시 저장되었습니다.', 'success');
       resetForm();
       return;
     }
@@ -126,6 +158,7 @@ export default function AdminNoticesPage() {
     };
 
     setNotices((prev) => [newNotice, ...prev]);
+    showToast('공지사항이 임시 저장되었습니다.', 'success');
     resetForm();
   };
 
@@ -133,7 +166,10 @@ export default function AdminNoticesPage() {
     const trimmedTitle = titleInput.trim();
     const trimmedContent = contentInput.trim();
 
-    if (!trimmedTitle || !trimmedContent) return;
+    if (!trimmedTitle || !trimmedContent) {
+      showToast('공지 제목과 내용을 모두 입력해주세요.', 'error');
+      return;
+    }
 
     if (editingId !== null) {
       setNotices((prev) =>
@@ -148,6 +184,7 @@ export default function AdminNoticesPage() {
             : notice
         )
       );
+      showToast('공지사항이 수정되었습니다.', 'success');
       resetForm();
       return;
     }
@@ -161,6 +198,7 @@ export default function AdminNoticesPage() {
     };
 
     setNotices((prev) => [newNotice, ...prev]);
+    showToast('공지사항이 등록되었습니다.', 'success');
     resetForm();
   };
 
@@ -192,6 +230,7 @@ export default function AdminNoticesPage() {
       resetForm();
     }
 
+    showToast('공지사항이 삭제되었습니다.', 'success');
     closeDeleteModal();
   };
 
@@ -219,12 +258,10 @@ export default function AdminNoticesPage() {
             <SummaryLabel>전체 공지</SummaryLabel>
             <SummaryValue>{summary.total}</SummaryValue>
           </SummaryCard>
-
           <SummaryCard>
             <SummaryLabel>게시중</SummaryLabel>
             <SummaryValue>{summary.published}</SummaryValue>
           </SummaryCard>
-
           <SummaryCard>
             <SummaryLabel>임시저장</SummaryLabel>
             <SummaryValue>{summary.draft}</SummaryValue>
@@ -368,6 +405,13 @@ export default function AdminNoticesPage() {
           </ModalCard>
         </ModalOverlay>
       )}
+
+      <AdminActionToast
+        open = {toast.open}
+        message = {toast.message}
+        variant = {toast.variant}
+        onClose = {closeToast}
+      />
     </>
   );
 }

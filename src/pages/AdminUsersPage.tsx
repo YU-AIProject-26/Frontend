@@ -1,13 +1,5 @@
 import { useMemo, useState } from 'react';
-import {
-  Search,
-  ChevronRight,
-  Shield,
-  UserX,
-  CheckCircle2,
-  Users,
-  X,
-} from 'lucide-react';
+import { Search, ChevronRight, Shield, UserX, CheckCircle2, Users, X } from 'lucide-react';
 import {
   AdminSubPageWrapper,
   SubPageHeader,
@@ -32,7 +24,6 @@ import {
   ModalCloseButton,
   ModalBody,
   ModalFooter,
-  ModalPrimaryButton,
   ModalSecondaryButton,
   InfoGrid,
   InfoItem,
@@ -42,7 +33,13 @@ import {
   RoleOptionButton,
   EmptyStateBox,
   EmptyStateText,
+  SummaryRow,
+  SummaryCard,
+  SummaryLabel,
+  SummaryValue,
 } from './AdminSubPage.styles';
+import AdminActionToast from '../components/AdminActionToast';
+import { useAuth } from '../contexts/useAuth';
 
 type UserRole = 'admin' | 'user';
 type UserStatus = '활성' | '대기' | '정지';
@@ -59,6 +56,8 @@ type UserItem = {
 };
 
 export default function AdminUsersPage() {
+  const { user } = useAuth();
+
   const [users, setUsers] = useState<UserItem[]>([
     {
       id: 1,
@@ -74,7 +73,7 @@ export default function AdminUsersPage() {
       id: 2,
       nickname: '테스트 사용자',
       email: 'test@acta.com',
-      role: 'user',
+      role: 'admin',
       joinedAt: '2026.05.11',
       status: '활성',
       meetings: 9,
@@ -96,7 +95,7 @@ export default function AdminUsersPage() {
       email: 'jieun@acta.com',
       role: 'user',
       joinedAt: '2026.05.12',
-      status: '대기',
+      status: '활성',
       meetings: 3,
       todos: 7,
     },
@@ -121,22 +120,58 @@ export default function AdminUsersPage() {
   const [isRoleModalOpen, setIsRoleModalOpen] = useState(false);
   const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
 
-  const filteredUsers = useMemo(() => {
-    return users.filter((user) => {
-      const matchesKeyword =
-        user.nickname.toLowerCase().includes(searchKeyword.toLowerCase()) ||
-        user.email.toLowerCase().includes(searchKeyword.toLowerCase());
+  const [toast, setToast] = useState<{
+    open: boolean;
+    message: string;
+    variant: 'success' | 'error';
+  }>({
+    open: false,
+    message: '',
+    variant: 'success',
+  });
 
-      const matchesRole = roleFilter === 'all' ? true : user.role === roleFilter;
+  const filteredUsers = useMemo(() => {
+    return users.filter((target) => {
+      const matchesKeyword =
+        target.nickname.toLowerCase().includes(searchKeyword.toLowerCase()) ||
+        target.email.toLowerCase().includes(searchKeyword.toLowerCase());
+
+      const matchesRole = roleFilter === 'all' ? true : target.role === roleFilter;
       const matchesStatus =
-        statusFilter === 'all' ? true : user.status === statusFilter;
+        statusFilter === 'all' ? true : target.status === statusFilter;
 
       return matchesKeyword && matchesRole && matchesStatus;
     });
   }, [users, searchKeyword, roleFilter, statusFilter]);
 
-  const openDetailModal = (user: UserItem) => {
-    setSelectedUser(user);
+  const summary = useMemo(() => {
+    return {
+      total: users.length,
+      admins: users.filter((item) => item.role === 'admin').length,
+      active: users.filter((item) => item.status === '활성').length,
+      pending: users.filter((item) => item.status === '대기').length,
+    };
+  }, [users]);
+
+  const isSelf = selectedUser?.email === user?.email;
+
+  const showToast = (message: string, variant: 'success' | 'error' = 'success') => {
+    setToast({
+      open: true,
+      message,
+      variant,
+    });
+  };
+
+  const closeToast = () => {
+    setToast((prev) => ({
+      ...prev,
+      open: false,
+    }));
+  };
+
+  const openDetailModal = (target: UserItem) => {
+    setSelectedUser(target);
     setIsDetailModalOpen(true);
   };
 
@@ -145,8 +180,8 @@ export default function AdminUsersPage() {
     setSelectedUser(null);
   };
 
-  const openRoleModal = (user: UserItem) => {
-    setSelectedUser(user);
+  const openRoleModal = (target: UserItem) => {
+    setSelectedUser(target);
     setIsRoleModalOpen(true);
   };
 
@@ -155,8 +190,8 @@ export default function AdminUsersPage() {
     setSelectedUser(null);
   };
 
-  const openStatusModal = (user: UserItem) => {
-    setSelectedUser(user);
+  const openStatusModal = (target: UserItem) => {
+    setSelectedUser(target);
     setIsStatusModalOpen(true);
   };
 
@@ -168,28 +203,43 @@ export default function AdminUsersPage() {
   const handleChangeRole = (nextRole: UserRole) => {
     if (!selectedUser) return;
 
+    if (selectedUser.email === user?.email && nextRole !== 'admin') {
+      showToast('현재 로그인한 관리자 자신의 권한은 일반 사용자로 변경할 수 없습니다.', 'error');
+      closeRoleModal();
+      return;
+    }
+
     setUsers((prev) =>
-      prev.map((user) =>
-        user.id === selectedUser.id
-          ? { ...user, role: nextRole }
-          : user
+      prev.map((target) =>
+        target.id === selectedUser.id ? { ...target, role: nextRole } : target
       )
     );
 
+    showToast(
+      `${selectedUser.nickname} 계정의 권한이 ${
+        nextRole === 'admin' ? '관리자' : '일반 사용자'
+      }로 변경되었습니다.`,
+      'success'
+    );
     closeRoleModal();
   };
 
   const handleChangeStatus = (nextStatus: UserStatus) => {
     if (!selectedUser) return;
 
+    if (selectedUser.email === user?.email && nextStatus === '정지') {
+      showToast('현재 로그인한 관리자 자신의 계정은 정지할 수 없습니다.', 'error');
+      closeStatusModal();
+      return;
+    }
+
     setUsers((prev) =>
-      prev.map((user) =>
-        user.id === selectedUser.id
-          ? { ...user, status: nextStatus }
-          : user
+      prev.map((target) =>
+        target.id === selectedUser.id ? { ...target, status: nextStatus } : target
       )
     );
 
+    showToast(`${selectedUser.nickname} 계정의 상태가 ${nextStatus}로 변경되었습니다.`, 'success');
     closeStatusModal();
   };
 
@@ -212,6 +262,25 @@ export default function AdminUsersPage() {
           </SubPageTopRow>
         </SubPageHeader>
 
+        <SummaryRow>
+          <SummaryCard>
+            <SummaryLabel>전체 회원</SummaryLabel>
+            <SummaryValue>{summary.total}</SummaryValue>
+          </SummaryCard>
+          <SummaryCard>
+            <SummaryLabel>관리자</SummaryLabel>
+            <SummaryValue>{summary.admins}</SummaryValue>
+          </SummaryCard>
+          <SummaryCard>
+            <SummaryLabel>활성</SummaryLabel>
+            <SummaryValue>{summary.active}</SummaryValue>
+          </SummaryCard>
+          <SummaryCard>
+            <SummaryLabel>대기</SummaryLabel>
+            <SummaryValue>{summary.pending}</SummaryValue>
+          </SummaryCard>
+        </SummaryRow>
+
         <SearchFilterRow>
           <SearchInputWrapper>
             <Search className = "search-icon" />
@@ -233,9 +302,7 @@ export default function AdminUsersPage() {
 
           <FilterSelect
             value = {statusFilter}
-            onChange = {(e) =>
-              setStatusFilter(e.target.value as 'all' | UserStatus)
-            }
+            onChange = {(e) => setStatusFilter(e.target.value as 'all' | UserStatus)}
           >
             <option value = "all">전체 상태</option>
             <option value = "활성">활성</option>
@@ -264,48 +331,48 @@ export default function AdminUsersPage() {
               </thead>
 
               <tbody>
-                {filteredUsers.map((user) => (
-                  <tr key = {user.id}>
-                    <td>{user.nickname}</td>
-                    <td>{user.email}</td>
+                {filteredUsers.map((target) => (
+                  <tr key = {target.id}>
+                    <td>{target.nickname}</td>
+                    <td>{target.email}</td>
                     <td>
-                      <TableBadge $variant = {user.role === 'admin' ? 'admin' : 'default'}>
-                        {user.role === 'admin' ? '관리자' : '일반'}
+                      <TableBadge $variant = {target.role === 'admin' ? 'admin' : 'default'}>
+                        {target.role === 'admin' ? '관리자' : '일반'}
                       </TableBadge>
                     </td>
-                    <td>{user.joinedAt}</td>
+                    <td>{target.joinedAt}</td>
                     <td>
                       <TableBadge
                         $variant = {
-                          user.status === '활성'
+                          target.status === '활성'
                             ? 'success'
-                            : user.status === '대기'
+                            : target.status === '대기'
                             ? 'pending'
                             : 'danger'
                         }
                       >
-                        {user.status}
+                        {target.status}
                       </TableBadge>
                     </td>
                     <td>
                       <TableActionRow>
                         <TableActionButton
                           type = "button"
-                          onClick = {() => openDetailModal(user)}
+                          onClick = {() => openDetailModal(target)}
                         >
                           상세 보기
                         </TableActionButton>
 
                         <TableActionButton
                           type = "button"
-                          onClick = {() => openRoleModal(user)}
+                          onClick = {() => openRoleModal(target)}
                         >
                           권한 변경
                         </TableActionButton>
 
                         <TableActionButton
                           type = "button"
-                          onClick = {() => openStatusModal(user)}
+                          onClick = {() => openStatusModal(target)}
                         >
                           상태 변경
                         </TableActionButton>
@@ -439,6 +506,12 @@ export default function AdminUsersPage() {
                   관리자
                 </RoleOptionButton>
               </RoleOptionList>
+
+              {isSelf && (
+                <ModalDescription>
+                  현재 로그인한 관리자 자신의 권한은 일반 사용자로 변경할 수 없습니다.
+                </ModalDescription>
+              )}
             </ModalBody>
 
             <ModalFooter>
@@ -495,6 +568,12 @@ export default function AdminUsersPage() {
                   정지
                 </RoleOptionButton>
               </RoleOptionList>
+
+              {isSelf && (
+                <ModalDescription>
+                  현재 로그인한 관리자 자신의 계정은 정지할 수 없습니다.
+                </ModalDescription>
+              )}
             </ModalBody>
 
             <ModalFooter>
@@ -505,6 +584,13 @@ export default function AdminUsersPage() {
           </ModalCard>
         </ModalOverlay>
       )}
+
+      <AdminActionToast
+        open = {toast.open}
+        message = {toast.message}
+        variant = {toast.variant}
+        onClose = {closeToast}
+      />
     </>
   );
 }

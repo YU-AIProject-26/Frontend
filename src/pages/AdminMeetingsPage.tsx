@@ -4,10 +4,8 @@ import {
   ChevronRight,
   FileText,
   RefreshCw,
-  Trash2,
   CheckCircle2,
   AlertTriangle,
-  Clock3,
   X,
 } from 'lucide-react';
 import {
@@ -49,6 +47,7 @@ import {
   EmptyStateBox,
   EmptyStateText,
 } from './AdminSubPage.styles';
+import AdminActionToast from '../components/AdminActionToast';
 
 type MeetingStatus = '분석 완료' | '분석중' | '실패';
 
@@ -124,6 +123,16 @@ export default function AdminMeetingsPage() {
   const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
+  const [toast, setToast] = useState<{
+    open: boolean;
+    message: string;
+    variant: 'success' | 'error';
+  }>({
+    open: false,
+    message: '',
+    variant: 'success',
+  });
+
   const filteredMeetings = useMemo(() => {
     return meetings.filter((meeting) => {
       const keyword = searchKeyword.trim().toLowerCase();
@@ -149,6 +158,21 @@ export default function AdminMeetingsPage() {
       failed: meetings.filter((item) => item.status === '실패').length,
     };
   }, [meetings]);
+
+  const showToast = (message: string, variant: 'success' | 'error' = 'success') => {
+    setToast({
+      open: true,
+      message,
+      variant,
+    });
+  };
+
+  const closeToast = () => {
+    setToast((prev) => ({
+      ...prev,
+      open: false,
+    }));
+  };
 
   const openDetailModal = (meeting: MeetingItem) => {
     setSelectedMeeting(meeting);
@@ -191,6 +215,7 @@ export default function AdminMeetingsPage() {
       )
     );
 
+    showToast(`${selectedMeeting.title} 회의의 상태가 ${nextStatus}로 변경되었습니다.`, 'success');
     closeStatusModal();
   };
 
@@ -201,6 +226,7 @@ export default function AdminMeetingsPage() {
       prev.filter((meeting) => meeting.id !== selectedMeeting.id)
     );
 
+    showToast(`${selectedMeeting.title} 회의가 삭제되었습니다.`, 'success');
     closeDeleteModal();
   };
 
@@ -228,17 +254,14 @@ export default function AdminMeetingsPage() {
             <SummaryLabel>전체 회의</SummaryLabel>
             <SummaryValue>{summary.total}</SummaryValue>
           </SummaryCard>
-
           <SummaryCard>
             <SummaryLabel>분석 완료</SummaryLabel>
             <SummaryValue>{summary.completed}</SummaryValue>
           </SummaryCard>
-
           <SummaryCard>
             <SummaryLabel>분석중</SummaryLabel>
             <SummaryValue>{summary.analyzing}</SummaryValue>
           </SummaryCard>
-
           <SummaryCard>
             <SummaryLabel>실패</SummaryLabel>
             <SummaryValue>{summary.failed}</SummaryValue>
@@ -528,6 +551,13 @@ export default function AdminMeetingsPage() {
           </ModalCard>
         </ModalOverlay>
       )}
+
+      <AdminActionToast
+        open = {toast.open}
+        message = {toast.message}
+        variant = {toast.variant}
+        onClose = {closeToast}
+      />
     </>
   );
 }
