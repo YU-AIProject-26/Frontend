@@ -8,6 +8,7 @@ import {
   Clock3,
   X,
   RotateCcw,
+  Info,
 } from 'lucide-react';
 import {
   AdminSubPageWrapper,
@@ -53,6 +54,8 @@ import {
   ToolbarActions,
   ToolbarButton,
   ResultMeta,
+  WarningMessage,
+  InfoMessage,
 } from './AdminSubPage.styles';
 import AdminActionToast from '../components/AdminActionToast';
 
@@ -131,6 +134,9 @@ export default function AdminInquiriesPage() {
 
   const [pendingStatus, setPendingStatus] = useState<InquiryStatus | null>(null);
   const [isStatusConfirmModalOpen, setIsStatusConfirmModalOpen] = useState(false);
+
+  const [isDiscardMemoModalOpen, setIsDiscardMemoModalOpen] = useState(false);
+  const [pendingAction, setPendingAction] = useState<'close' | 'status' | null>(null);
 
   const [toast, setToast] = useState<{
     open: boolean;
@@ -217,14 +223,37 @@ export default function AdminInquiriesPage() {
     setIsDetailModalOpen(true);
   };
 
-  const closeDetailModal = () => {
+  const closeDetailModalDirect = () => {
     setIsDetailModalOpen(false);
     setSelectedInquiry(null);
     setMemoInput('');
   };
 
-  const openStatusModal = (item: InquiryItem) => {
+  const requestCloseDetailModal = () => {
+    if (isMemoChanged) {
+      setPendingAction('close');
+      setIsDiscardMemoModalOpen(true);
+      return;
+    }
+
+    closeDetailModalDirect();
+  };
+
+  const openStatusModalDirect = () => {
+    setIsDetailModalOpen(false);
+    setIsStatusModalOpen(true);
+  };
+
+  const requestOpenStatusModal = (item: InquiryItem) => {
     setSelectedInquiry(item);
+    setMemoInput(item.memo);
+
+    if (isDetailModalOpen && isMemoChanged) {
+      setPendingAction('status');
+      setIsDiscardMemoModalOpen(true);
+      return;
+    }
+
     setPendingStatus(null);
     setIsStatusModalOpen(true);
   };
@@ -233,6 +262,23 @@ export default function AdminInquiriesPage() {
     setIsStatusModalOpen(false);
     setSelectedInquiry(null);
     setPendingStatus(null);
+  };
+
+  const closeDiscardMemoModal = () => {
+    setIsDiscardMemoModalOpen(false);
+    setPendingAction(null);
+  };
+
+  const confirmDiscardMemo = () => {
+    if (pendingAction === 'close') {
+      closeDetailModalDirect();
+    }
+
+    if (pendingAction === 'status') {
+      openStatusModalDirect();
+    }
+
+    closeDiscardMemoModal();
   };
 
   const openStatusConfirmModal = (nextStatus: InquiryStatus) => {
@@ -258,7 +304,7 @@ export default function AdminInquiriesPage() {
     );
 
     showToast('관리자 메모가 저장되었습니다.', 'success');
-    closeDetailModal();
+    closeDetailModalDirect();
   };
 
   const confirmStatusChange = () => {
@@ -425,7 +471,7 @@ export default function AdminInquiriesPage() {
 
                         <TableActionButton
                           type = "button"
-                          onClick = {() => openStatusModal(item)}
+                          onClick = {() => requestOpenStatusModal(item)}
                         >
                           상태 변경
                         </TableActionButton>
@@ -440,7 +486,7 @@ export default function AdminInquiriesPage() {
       </AdminSubPageWrapper>
 
       {isDetailModalOpen && selectedInquiry && (
-        <ModalOverlay onClick = {closeDetailModal}>
+        <ModalOverlay onClick = {requestCloseDetailModal}>
           <ModalCard onClick = {(e) => e.stopPropagation()}>
             <ModalHeader>
               <div>
@@ -450,7 +496,7 @@ export default function AdminInquiriesPage() {
                 </ModalDescription>
               </div>
 
-              <ModalCloseButton type = "button" onClick = {closeDetailModal}>
+              <ModalCloseButton type = "button" onClick = {requestCloseDetailModal}>
                 <X className = "close-icon" />
               </ModalCloseButton>
             </ModalHeader>
@@ -521,10 +567,17 @@ export default function AdminInquiriesPage() {
                   placeholder = "처리 내용이나 확인 메모를 입력하세요"
                 />
               </FormGroup>
+
+              {isMemoChanged && (
+                <InfoMessage>
+                  <Info className = "info-icon" />
+                  <span>현재 메모가 수정되었습니다. 저장하지 않고 닫거나 다른 작업으로 이동하면 변경 내용이 사라집니다.</span>
+                </InfoMessage>
+              )}
             </ModalBody>
 
             <ModalFooter>
-              <ModalSecondaryButton type = "button" onClick = {closeDetailModal}>
+              <ModalSecondaryButton type = "button" onClick = {requestCloseDetailModal}>
                 취소
               </ModalSecondaryButton>
 
@@ -588,6 +641,13 @@ export default function AdminInquiriesPage() {
                   완료
                 </OptionButton>
               </OptionList>
+
+              {selectedInquiry.status === '완료' && (
+                <InfoMessage>
+                  <Info className = "info-icon" />
+                  <span>완료된 문의를 다시 변경하면 처리 상태 이력이 바뀐 것처럼 보일 수 있습니다.</span>
+                </InfoMessage>
+              )}
             </ModalBody>
 
             <ModalFooter>
@@ -637,6 +697,18 @@ export default function AdminInquiriesPage() {
                   <InfoValue>{pendingStatus}</InfoValue>
                 </InfoItem>
               </InfoGrid>
+
+              {pendingStatus === '완료' ? (
+                <InfoMessage>
+                  <Info className = "info-icon" />
+                  <span>완료로 변경하면 운영 화면에서 해당 문의는 처리 완료 항목으로 보입니다.</span>
+                </InfoMessage>
+              ) : (
+                <WarningMessage>
+                  <AlertTriangle className = "warning-icon" />
+                  <span>대기 또는 처리중 상태로 바꾸면 다시 후속 확인이 필요한 항목으로 분류됩니다.</span>
+                </WarningMessage>
+              )}
             </ModalBody>
 
             <ModalFooter>
@@ -645,6 +717,41 @@ export default function AdminInquiriesPage() {
               </ModalSecondaryButton>
               <ModalPrimaryButton type = "button" onClick = {confirmStatusChange}>
                 변경하기
+              </ModalPrimaryButton>
+            </ModalFooter>
+          </ModalCard>
+        </ModalOverlay>
+      )}
+
+      {isDiscardMemoModalOpen && (
+        <ModalOverlay onClick = {closeDiscardMemoModal}>
+          <ModalCard onClick = {(e) => e.stopPropagation()}>
+            <ModalHeader>
+              <div>
+                <ModalTitle>저장하지 않은 메모가 있습니다</ModalTitle>
+                <ModalDescription>
+                  현재 입력한 관리자 메모는 아직 저장되지 않았습니다.
+                </ModalDescription>
+              </div>
+
+              <ModalCloseButton type = "button" onClick = {closeDiscardMemoModal}>
+                <X className = "close-icon" />
+              </ModalCloseButton>
+            </ModalHeader>
+
+            <ModalBody>
+              <WarningMessage>
+                <AlertTriangle className = "warning-icon" />
+                <span>저장하지 않고 이동하면 현재 메모 수정 내용은 사라집니다.</span>
+              </WarningMessage>
+            </ModalBody>
+
+            <ModalFooter>
+              <ModalSecondaryButton type = "button" onClick = {closeDiscardMemoModal}>
+                취소
+              </ModalSecondaryButton>
+              <ModalPrimaryButton type = "button" onClick = {confirmDiscardMemo}>
+                이동하기
               </ModalPrimaryButton>
             </ModalFooter>
           </ModalCard>

@@ -952,3 +952,27 @@ export const WarningMessage = styled.div`
     color: #fbbf24;
   }
 `;
+
+export const InfoMessage = styled.div`
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin-top: 0.875rem;
+  padding: 0.875rem 1rem;
+  border-radius: 0.875rem;
+  background: rgba(37, 99, 235, 0.08);
+  color: ${({ theme }) => theme.colors.accent};
+  font-size: 0.875rem;
+  line-height: 1.5;
+
+  .info-icon {
+    width: 1rem;
+    height: 1rem;
+    flex-shrink: 0;
+    margin-top: 0.125rem;
+  }
+
+  html.dark & {
+    background: rgba(37, 99, 235, 0.14);
+  }
+`;

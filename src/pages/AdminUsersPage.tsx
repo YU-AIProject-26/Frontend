@@ -8,6 +8,8 @@ import {
   Users,
   X,
   RotateCcw,
+  AlertTriangle,
+  Info,
 } from 'lucide-react';
 import {
   AdminSubPageWrapper,
@@ -50,6 +52,8 @@ import {
   ToolbarActions,
   ToolbarButton,
   ResultMeta,
+  WarningMessage,
+  InfoMessage,
 } from './AdminSubPage.styles';
 import AdminActionToast from '../components/AdminActionToast';
 import { useAuth } from '../contexts/useAuth';
@@ -194,6 +198,8 @@ export default function AdminUsersPage() {
   }, [users]);
 
   const isSelf = selectedUser?.email === user?.email;
+  const isTargetAdmin = selectedUser?.role === 'admin';
+  const isTargetSuspended = selectedUser?.status === '정지';
 
   const showToast = (message: string, variant: 'success' | 'error' = 'success') => {
     setToast({
@@ -254,10 +260,7 @@ export default function AdminUsersPage() {
 
   const openRoleConfirmModal = (nextRole: UserRole) => {
     if (!selectedUser) return;
-
-    if (selectedUser.role === nextRole) {
-      return;
-    }
+    if (selectedUser.role === nextRole) return;
 
     if (selectedUser.email === user?.email && nextRole !== 'admin') {
       showToast('현재 로그인한 관리자 자신의 권한은 일반 사용자로 변경할 수 없습니다.', 'error');
@@ -296,10 +299,7 @@ export default function AdminUsersPage() {
 
   const openStatusConfirmModal = (nextStatus: UserStatus) => {
     if (!selectedUser) return;
-
-    if (selectedUser.status === nextStatus) {
-      return;
-    }
+    if (selectedUser.status === nextStatus) return;
 
     if (selectedUser.email === user?.email && nextStatus === '정지') {
       showToast('현재 로그인한 관리자 자신의 계정은 정지할 수 없습니다.', 'error');
@@ -617,9 +617,17 @@ export default function AdminUsersPage() {
               </RoleOptionList>
 
               {isSelf && (
-                <ModalDescription>
-                  현재 로그인한 관리자 자신의 권한은 일반 사용자로 변경할 수 없습니다.
-                </ModalDescription>
+                <WarningMessage>
+                  <AlertTriangle className = "warning-icon" />
+                  <span>현재 로그인한 관리자 자신의 권한은 일반 사용자로 변경할 수 없습니다.</span>
+                </WarningMessage>
+              )}
+
+              {isTargetAdmin && !isSelf && (
+                <InfoMessage>
+                  <Info className = "info-icon" />
+                  <span>관리자 권한을 변경하면 해당 계정은 관리자 페이지 접근 권한을 잃을 수 있습니다.</span>
+                </InfoMessage>
               )}
             </ModalBody>
 
@@ -674,6 +682,11 @@ export default function AdminUsersPage() {
                   </InfoValue>
                 </InfoItem>
               </InfoGrid>
+
+              <WarningMessage>
+                <AlertTriangle className = "warning-icon" />
+                <span>권한 변경 후에는 해당 계정의 접근 가능한 화면과 기능이 즉시 달라집니다.</span>
+              </WarningMessage>
             </ModalBody>
 
             <ModalFooter>
@@ -738,9 +751,17 @@ export default function AdminUsersPage() {
               </RoleOptionList>
 
               {isSelf && (
-                <ModalDescription>
-                  현재 로그인한 관리자 자신의 계정은 정지할 수 없습니다.
-                </ModalDescription>
+                <WarningMessage>
+                  <AlertTriangle className = "warning-icon" />
+                  <span>현재 로그인한 관리자 자신의 계정은 정지할 수 없습니다.</span>
+                </WarningMessage>
+              )}
+
+              {isTargetSuspended && (
+                <InfoMessage>
+                  <Info className = "info-icon" />
+                  <span>정지된 계정을 활성 또는 대기 상태로 바꾸면 다시 서비스 접근이 가능해질 수 있습니다.</span>
+                </InfoMessage>
               )}
             </ModalBody>
 
@@ -791,6 +812,11 @@ export default function AdminUsersPage() {
                   <InfoValue>{pendingStatus}</InfoValue>
                 </InfoItem>
               </InfoGrid>
+
+              <WarningMessage>
+                <AlertTriangle className = "warning-icon" />
+                <span>상태를 정지로 변경하면 해당 회원은 주요 기능을 더 이상 사용할 수 없습니다.</span>
+              </WarningMessage>
             </ModalBody>
 
             <ModalFooter>
