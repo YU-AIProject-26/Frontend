@@ -98,7 +98,10 @@ export default function TodoPage() {
   const [sortType, setSortType] = useState<SortType>('due-date');
   const [searchKeyword, setSearchKeyword] = useState('');
   const [openMenuId, setOpenMenuId] = useState<number | null>(null);
+
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingTodoId, setEditingTodoId] = useState<number | null>(null);
 
   const [todos, setTodos] = useState<Todo[]>([
     {
@@ -191,14 +194,17 @@ export default function TodoPage() {
     },
   ]);
 
-  const [newTodo, setNewTodo] = useState({
+  const emptyTodoForm = {
     text: '',
     assignee: '',
     dueDate: '',
     priority: 'medium' as 'high' | 'medium' | 'low',
     source: '',
     status: '대기중' as Exclude<TodoStatus, '완료'>,
-  });
+  };
+
+  const [newTodo, setNewTodo] = useState(emptyTodoForm);
+  const [editTodo, setEditTodo] = useState(emptyTodoForm);
 
   const assigneeOptions = useMemo(() => {
     const uniqueAssignees = Array.from(
@@ -212,24 +218,32 @@ export default function TodoPage() {
     return ['all-assignee', ...uniqueAssignees];
   }, [todos]);
 
-  const resetNewTodo = () => {
-    setNewTodo({
-      text: '',
-      assignee: '',
-      dueDate: '',
-      priority: 'medium',
-      source: '',
-      status: '대기중',
-    });
-  };
-
   const openAddModal = () => {
-    resetNewTodo();
+    setNewTodo(emptyTodoForm);
     setIsAddModalOpen(true);
   };
 
   const closeAddModal = () => {
     setIsAddModalOpen(false);
+  };
+
+  const openEditModal = (todo: Todo) => {
+    setEditingTodoId(todo.id);
+    setEditTodo({
+      text: todo.text,
+      assignee: todo.assignee,
+      dueDate: todo.dueDate,
+      priority: todo.priority,
+      source: todo.source,
+      status: todo.status === '완료' ? todo.previousStatus ?? '진행중' : todo.status,
+    });
+    setOpenMenuId(null);
+    setIsEditModalOpen(true);
+  };
+
+  const closeEditModal = () => {
+    setIsEditModalOpen(false);
+    setEditingTodoId(null);
   };
 
   const handleAddTodo = () => {
@@ -256,6 +270,54 @@ export default function TodoPage() {
 
     setTodos((prev) => [createdTodo, ...prev]);
     closeAddModal();
+  };
+
+  const handleEditTodo = () => {
+    if (
+      editingTodoId === null ||
+      !editTodo.text.trim() ||
+      !editTodo.assignee.trim() ||
+      !editTodo.dueDate ||
+      !editTodo.source.trim()
+    ) {
+      return;
+    }
+
+    setTodos((prev) =>
+      prev.map((todo) => {
+        if (todo.id !== editingTodoId) return todo;
+
+        if (todo.completed) {
+          return {
+            ...todo,
+            text: editTodo.text.trim(),
+            assignee: editTodo.assignee.trim(),
+            dueDate: editTodo.dueDate,
+            priority: editTodo.priority,
+            source: editTodo.source.trim(),
+            previousStatus: editTodo.status,
+          };
+        }
+
+        return {
+          ...todo,
+          text: editTodo.text.trim(),
+          assignee: editTodo.assignee.trim(),
+          dueDate: editTodo.dueDate,
+          priority: editTodo.priority,
+          source: editTodo.source.trim(),
+          status: editTodo.status,
+          previousStatus: editTodo.status,
+        };
+      })
+    );
+
+    closeEditModal();
+  };
+
+  const handleDeleteTodo = (id: number) => {
+    setTodos((prev) => prev.filter((todo) => todo.id !== id));
+    setOpenMenuId(null);
   };
 
   const toggleTodoCompleted = (id: number) => {
@@ -498,10 +560,15 @@ export default function TodoPage() {
 
                           {openMenuId === todo.id && (
                             <ActionMenu>
-                              <ActionMenuItem>수정하기</ActionMenuItem>
-                              <ActionMenuItem>담당자 변경</ActionMenuItem>
-                              <ActionMenuItem>마감일 변경</ActionMenuItem>
-                              <ActionMenuItem $danger>삭제하기</ActionMenuItem>
+                              <ActionMenuItem onClick = {() => openEditModal(todo)}>
+                                수정하기
+                              </ActionMenuItem>
+                              <ActionMenuItem
+                                $danger
+                                onClick = {() => handleDeleteTodo(todo.id)}
+                              >
+                                삭제하기
+                              </ActionMenuItem>
                             </ActionMenu>
                           )}
                         </ActionMenuWrapper>
@@ -644,6 +711,121 @@ export default function TodoPage() {
               </ModalCancelButton>
               <ModalSubmitButton type = "button" onClick = {handleAddTodo}>
                 추가
+              </ModalSubmitButton>
+            </ModalActions>
+          </ModalCard>
+        </ModalOverlay>
+      )}
+
+      {isEditModalOpen && (
+        <ModalOverlay onClick = {closeEditModal}>
+          <ModalCard onClick = {(e) => e.stopPropagation()}>
+            <ModalHeader>
+              <ModalTitle>Todo 수정</ModalTitle>
+              <ModalCloseButton type = "button" onClick = {closeEditModal}>
+                <X className = "close-icon" />
+              </ModalCloseButton>
+            </ModalHeader>
+
+            <ModalBody>
+              <ModalGrid>
+                <ModalField>
+                  <ModalLabel>Todo 내용</ModalLabel>
+                  <ModalInput
+                    value = {editTodo.text}
+                    onChange = {(e) =>
+                      setEditTodo((prev) => ({
+                        ...prev,
+                        text: e.target.value,
+                      }))
+                    }
+                    placeholder = "해야 할 작업 내용을 입력하세요"
+                  />
+                </ModalField>
+
+                <ModalField>
+                  <ModalLabel>담당자</ModalLabel>
+                  <ModalInput
+                    value = {editTodo.assignee}
+                    onChange = {(e) =>
+                      setEditTodo((prev) => ({
+                        ...prev,
+                        assignee: e.target.value,
+                      }))
+                    }
+                    placeholder = "담당자 이름을 입력하세요"
+                  />
+                </ModalField>
+
+                <ModalField>
+                  <ModalLabel>마감일</ModalLabel>
+                  <ModalInput
+                    type = "date"
+                    value = {editTodo.dueDate}
+                    onChange = {(e) =>
+                      setEditTodo((prev) => ({
+                        ...prev,
+                        dueDate: e.target.value,
+                      }))
+                    }
+                  />
+                </ModalField>
+
+                <ModalField>
+                  <ModalLabel>우선순위</ModalLabel>
+                  <ModalSelect
+                    value = {editTodo.priority}
+                    onChange = {(e) =>
+                      setEditTodo((prev) => ({
+                        ...prev,
+                        priority: e.target.value as 'high' | 'medium' | 'low',
+                      }))
+                    }
+                  >
+                    <option value = "high">긴급</option>
+                    <option value = "medium">보통</option>
+                    <option value = "low">낮음</option>
+                  </ModalSelect>
+                </ModalField>
+
+                <ModalField>
+                  <ModalLabel>출처</ModalLabel>
+                  <ModalInput
+                    value = {editTodo.source}
+                    onChange = {(e) =>
+                      setEditTodo((prev) => ({
+                        ...prev,
+                        source: e.target.value,
+                      }))
+                    }
+                    placeholder = "예: 주간 마케팅 전략 회의"
+                  />
+                </ModalField>
+
+                <ModalField>
+                  <ModalLabel>상태</ModalLabel>
+                  <ModalSelect
+                    value = {editTodo.status}
+                    onChange = {(e) =>
+                      setEditTodo((prev) => ({
+                        ...prev,
+                        status: e.target.value as Exclude<TodoStatus, '완료'>,
+                      }))
+                    }
+                  >
+                    <option value = "진행중">진행중</option>
+                    <option value = "대기중">대기중</option>
+                  </ModalSelect>
+                </ModalField>
+              </ModalGrid>
+            </ModalBody>
+
+            <ModalActions>
+              <ModalCancelButton type = "button" onClick = {closeEditModal}>
+                취소
+              </ModalCancelButton>
+              <ModalSubmitButton type = "button" onClick = {handleEditTodo}>
+                저장
               </ModalSubmitButton>
             </ModalActions>
           </ModalCard>

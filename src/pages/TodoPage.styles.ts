@@ -267,17 +267,24 @@ export const SelectElement = styled.select`
 export const TodoListCard = styled.div`
   ${cardBase};
   border-radius: 0.75rem;
-  overflow: hidden;
+  overflow: visible;
 `;
 
 export const TodoList = styled.div``;
 
 export const TodoItem = styled.div<TodoItemProps>`
+  position: relative;
   padding: 1.25rem;
   transition: background-color 0.2s ease;
 
-  & + & {
-    border-top: 1px solid #e5e7eb;
+  & + &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: #e5e7eb;
   }
 
   &:hover {
@@ -290,15 +297,15 @@ export const TodoItem = styled.div<TodoItemProps>`
       background: #fef2f2;
     `}
 
+  html.dark & + &::before {
+    background: #242428;
+  }
+
+  html.dark &:hover {
+    background: #111827;
+  }
+
   html.dark & {
-    & + & {
-      border-top-color: #262626;
-    }
-
-    &:hover {
-      background: #111827;
-    }
-
     ${({ $overdue }) =>
       $overdue &&
       css`
@@ -467,7 +474,7 @@ export const ActionMenu = styled.div`
   position: absolute;
   top: calc(100% + 0.25rem);
   right: 0;
-  min-width: 9rem;
+  min-width: 8rem;
   padding: 0.375rem;
   border-radius: 0.75rem;
   border: 1px solid #e5e7eb;
