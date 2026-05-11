@@ -621,3 +621,43 @@ export const OptionButton = styled.button<{ $selected?: boolean }>`
     }
   }
 `;
+
+export const FormGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 1.25rem;
+`;
+
+export const FormLabel = styled.label`
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #111827;
+
+  html.dark & {
+    color: #ffffff;
+  }
+`;
+
+export const FormTextArea = styled.textarea`
+  min-height: 140px;
+  padding: 1rem;
+  border-radius: 0.75rem;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  color: #111827;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  resize: vertical;
+  outline: none;
+
+  &:focus {
+    border-color: ${({ theme }) => theme.colors.accent};
+  }
+
+  html.dark & {
+    border-color: #262626;
+    background: #111827;
+    color: #ffffff;
+  }
+`;

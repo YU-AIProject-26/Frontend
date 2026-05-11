@@ -1,6 +1,13 @@
+import { useMemo, useState } from 'react';
 import {
   Search,
   ChevronRight,
+  MessageSquare,
+  AlertTriangle,
+  CheckCircle2,
+  Clock3,
+  X,
+  FileText,
 } from 'lucide-react';
 import {
   AdminSubPageWrapper,
@@ -18,10 +25,49 @@ import {
   TableBadge,
   TableActionRow,
   TableActionButton,
+  SummaryRow,
+  SummaryCard,
+  SummaryLabel,
+  SummaryValue,
+  ModalOverlay,
+  ModalCard,
+  ModalHeader,
+  ModalTitle,
+  ModalDescription,
+  ModalCloseButton,
+  ModalBody,
+  ModalFooter,
+  ModalPrimaryButton,
+  ModalSecondaryButton,
+  InfoGrid,
+  InfoItem,
+  InfoLabel,
+  InfoValue,
+  OptionList,
+  OptionButton,
+  EmptyStateBox,
+  EmptyStateText,
+  FormGroup,
+  FormLabel,
+  FormTextArea,
 } from './AdminSubPage.styles';
 
+type InquiryType = '문의' | '신고' | '피드백';
+type InquiryStatus = '대기' | '처리중' | '완료';
+
+type InquiryItem = {
+  id: number;
+  type: InquiryType;
+  title: string;
+  author: string;
+  status: InquiryStatus;
+  createdAt: string;
+  description: string;
+  memo: string;
+};
+
 export default function AdminInquiriesPage() {
-  const inquiries = [
+  const [inquiries, setInquiries] = useState<InquiryItem[]>([
     {
       id: 1,
       type: '문의',
@@ -29,6 +75,8 @@ export default function AdminInquiriesPage() {
       author: 'jihye@acta.com',
       status: '대기',
       createdAt: '2026.05.12 14:20',
+      description: '환경설정에서 연동 버튼을 눌러도 반응이 없습니다.',
+      memo: '',
     },
     {
       id: 2,
@@ -37,6 +85,8 @@ export default function AdminInquiriesPage() {
       author: 'report@acta.com',
       status: '처리중',
       createdAt: '2026.05.12 12:05',
+      description: '공개된 회의 목록 중 부적절한 제목이 보입니다.',
+      memo: '문제 회의 제목 확인 중',
     },
     {
       id: 3,
@@ -45,104 +95,415 @@ export default function AdminInquiriesPage() {
       author: 'sora@acta.com',
       status: '완료',
       createdAt: '2026.05.11 18:42',
+      description: '회의 요약과 Todo를 문서로 내보내고 싶습니다.',
+      memo: '추후 기능 검토 목록에 추가',
     },
-  ];
+    {
+      id: 4,
+      type: '문의',
+      title: '로그인 후 대시보드가 비어 보입니다',
+      author: 'minji@acta.com',
+      status: '대기',
+      createdAt: '2026.05.13 09:10',
+      description: '처음 로그인 후 회의가 하나도 안 보이는데 정상인지 궁금합니다.',
+      memo: '',
+    },
+  ]);
+
+  const [searchKeyword, setSearchKeyword] = useState('');
+  const [typeFilter, setTypeFilter] = useState<'all' | InquiryType>('all');
+  const [statusFilter, setStatusFilter] = useState<'all' | InquiryStatus>('all');
+
+  const [selectedInquiry, setSelectedInquiry] = useState<InquiryItem | null>(null);
+  const [memoInput, setMemoInput] = useState('');
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
+
+  const filteredInquiries = useMemo(() => {
+    return inquiries.filter((item) => {
+      const keyword = searchKeyword.trim().toLowerCase();
+
+      const matchesKeyword =
+        keyword.length === 0
+          ? true
+          : item.title.toLowerCase().includes(keyword) ||
+            item.author.toLowerCase().includes(keyword);
+
+      const matchesType = typeFilter === 'all' ? true : item.type === typeFilter;
+      const matchesStatus =
+        statusFilter === 'all' ? true : item.status === statusFilter;
+
+      return matchesKeyword && matchesType && matchesStatus;
+    });
+  }, [inquiries, searchKeyword, typeFilter, statusFilter]);
+
+  const summary = useMemo(() => {
+    return {
+      total: inquiries.length,
+      pending: inquiries.filter((item) => item.status === '대기').length,
+      processing: inquiries.filter((item) => item.status === '처리중').length,
+      done: inquiries.filter((item) => item.status === '완료').length,
+    };
+  }, [inquiries]);
+
+  const openDetailModal = (item: InquiryItem) => {
+    setSelectedInquiry(item);
+    setMemoInput(item.memo);
+    setIsDetailModalOpen(true);
+  };
+
+  const closeDetailModal = () => {
+    setIsDetailModalOpen(false);
+    setSelectedInquiry(null);
+    setMemoInput('');
+  };
+
+  const openStatusModal = (item: InquiryItem) => {
+    setSelectedInquiry(item);
+    setIsStatusModalOpen(true);
+  };
+
+  const closeStatusModal = () => {
+    setIsStatusModalOpen(false);
+    setSelectedInquiry(null);
+  };
+
+  const handleSaveMemo = () => {
+    if (!selectedInquiry) return;
+
+    setInquiries((prev) =>
+      prev.map((item) =>
+        item.id === selectedInquiry.id
+          ? { ...item, memo: memoInput }
+          : item
+      )
+    );
+
+    closeDetailModal();
+  };
+
+  const handleChangeStatus = (nextStatus: InquiryStatus) => {
+    if (!selectedInquiry) return;
+
+    setInquiries((prev) =>
+      prev.map((item) =>
+        item.id === selectedInquiry.id
+          ? { ...item, status: nextStatus }
+          : item
+      )
+    );
+
+    closeStatusModal();
+  };
 
   return (
-    <AdminSubPageWrapper>
-      <SubPageHeader>
-        <SubPageTopRow>
-          <div>
-            <SubPageTitle>문의 / 신고 관리</SubPageTitle>
-            <SubPageDescription>
-              접수된 문의, 신고, 피드백을 확인하고 처리합니다
-            </SubPageDescription>
-          </div>
+    <>
+      <AdminSubPageWrapper>
+        <SubPageHeader>
+          <SubPageTopRow>
+            <div>
+              <SubPageTitle>문의 / 신고 관리</SubPageTitle>
+              <SubPageDescription>
+                접수된 문의, 신고, 피드백을 확인하고 처리합니다
+              </SubPageDescription>
+            </div>
 
-          <SubPagePrimaryLink to = "/admin">
-            관리자 메인으로
-            <ChevronRight className = "link-arrow" />
-          </SubPagePrimaryLink>
-        </SubPageTopRow>
-      </SubPageHeader>
+            <SubPagePrimaryLink to = "/admin">
+              관리자 메인으로
+              <ChevronRight className = "link-arrow" />
+            </SubPagePrimaryLink>
+          </SubPageTopRow>
+        </SubPageHeader>
 
-      <SearchFilterRow>
-        <SearchInputWrapper>
-          <Search className = "search-icon" />
-          <SearchInput placeholder = "제목 또는 작성자 검색" />
-        </SearchInputWrapper>
+        <SummaryRow>
+          <SummaryCard>
+            <SummaryLabel>전체 접수</SummaryLabel>
+            <SummaryValue>{summary.total}</SummaryValue>
+          </SummaryCard>
 
-        <FilterSelect defaultValue = "all">
-          <option value = "all">전체 유형</option>
-          <option value = "inquiry">문의</option>
-          <option value = "report">신고</option>
-          <option value = "feedback">피드백</option>
-        </FilterSelect>
+          <SummaryCard>
+            <SummaryLabel>대기</SummaryLabel>
+            <SummaryValue>{summary.pending}</SummaryValue>
+          </SummaryCard>
 
-        <FilterSelect defaultValue = "all">
-          <option value = "all">전체 상태</option>
-          <option value = "pending">대기</option>
-          <option value = "processing">처리중</option>
-          <option value = "done">완료</option>
-        </FilterSelect>
-      </SearchFilterRow>
+          <SummaryCard>
+            <SummaryLabel>처리중</SummaryLabel>
+            <SummaryValue>{summary.processing}</SummaryValue>
+          </SummaryCard>
 
-      <DataCard>
-        <DataTable>
-          <thead>
-            <tr>
-              <th>유형</th>
-              <th>제목</th>
-              <th>작성자</th>
-              <th>상태</th>
-              <th>접수일</th>
-              <th>관리</th>
-            </tr>
-          </thead>
+          <SummaryCard>
+            <SummaryLabel>완료</SummaryLabel>
+            <SummaryValue>{summary.done}</SummaryValue>
+          </SummaryCard>
+        </SummaryRow>
 
-          <tbody>
-            {inquiries.map((item) => (
-              <tr key = {item.id}>
-                <td>
-                  <TableBadge
-                    $variant = {
-                      item.type === '문의'
-                        ? 'default'
-                        : item.type === '신고'
-                        ? 'danger'
-                        : 'success'
-                    }
-                  >
-                    {item.type}
-                  </TableBadge>
-                </td>
-                <td>{item.title}</td>
-                <td>{item.author}</td>
-                <td>
-                  <TableBadge
-                    $variant = {
-                      item.status === '대기'
-                        ? 'pending'
-                        : item.status === '처리중'
-                        ? 'warning'
-                        : 'success'
-                    }
-                  >
-                    {item.status}
-                  </TableBadge>
-                </td>
-                <td>{item.createdAt}</td>
-                <td>
-                  <TableActionRow>
-                    <TableActionButton type = "button">상세 보기</TableActionButton>
-                    <TableActionButton type = "button">상태 변경</TableActionButton>
-                  </TableActionRow>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </DataTable>
-      </DataCard>
-    </AdminSubPageWrapper>
+        <SearchFilterRow>
+          <SearchInputWrapper>
+            <Search className = "search-icon" />
+            <SearchInput
+              value = {searchKeyword}
+              onChange = {(e) => setSearchKeyword(e.target.value)}
+              placeholder = "제목 또는 작성자 검색"
+            />
+          </SearchInputWrapper>
+
+          <FilterSelect
+            value = {typeFilter}
+            onChange = {(e) =>
+              setTypeFilter(e.target.value as 'all' | InquiryType)
+            }
+          >
+            <option value = "all">전체 유형</option>
+            <option value = "문의">문의</option>
+            <option value = "신고">신고</option>
+            <option value = "피드백">피드백</option>
+          </FilterSelect>
+
+          <FilterSelect
+            value = {statusFilter}
+            onChange = {(e) =>
+              setStatusFilter(e.target.value as 'all' | InquiryStatus)
+            }
+          >
+            <option value = "all">전체 상태</option>
+            <option value = "대기">대기</option>
+            <option value = "처리중">처리중</option>
+            <option value = "완료">완료</option>
+          </FilterSelect>
+        </SearchFilterRow>
+
+        <DataCard>
+          {filteredInquiries.length === 0 ? (
+            <EmptyStateBox>
+              <MessageSquare className = "empty-icon" />
+              <EmptyStateText>조건에 맞는 문의 항목이 없습니다.</EmptyStateText>
+            </EmptyStateBox>
+          ) : (
+            <DataTable>
+              <thead>
+                <tr>
+                  <th>유형</th>
+                  <th>제목</th>
+                  <th>작성자</th>
+                  <th>상태</th>
+                  <th>접수일</th>
+                  <th>관리</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {filteredInquiries.map((item) => (
+                  <tr key = {item.id}>
+                    <td>
+                      <TableBadge
+                        $variant = {
+                          item.type === '문의'
+                            ? 'default'
+                            : item.type === '신고'
+                            ? 'danger'
+                            : 'success'
+                        }
+                      >
+                        {item.type}
+                      </TableBadge>
+                    </td>
+
+                    <td>{item.title}</td>
+                    <td>{item.author}</td>
+
+                    <td>
+                      <TableBadge
+                        $variant = {
+                          item.status === '대기'
+                            ? 'pending'
+                            : item.status === '처리중'
+                            ? 'warning'
+                            : 'success'
+                        }
+                      >
+                        {item.status}
+                      </TableBadge>
+                    </td>
+
+                    <td>{item.createdAt}</td>
+
+                    <td>
+                      <TableActionRow>
+                        <TableActionButton
+                          type = "button"
+                          onClick = {() => openDetailModal(item)}
+                        >
+                          상세 보기
+                        </TableActionButton>
+
+                        <TableActionButton
+                          type = "button"
+                          onClick = {() => openStatusModal(item)}
+                        >
+                          상태 변경
+                        </TableActionButton>
+                      </TableActionRow>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </DataTable>
+          )}
+        </DataCard>
+      </AdminSubPageWrapper>
+
+      {isDetailModalOpen && selectedInquiry && (
+        <ModalOverlay onClick = {closeDetailModal}>
+          <ModalCard onClick = {(e) => e.stopPropagation()}>
+            <ModalHeader>
+              <div>
+                <ModalTitle>문의 상세 정보</ModalTitle>
+                <ModalDescription>
+                  접수된 내용과 관리자 메모를 확인하고 저장할 수 있습니다
+                </ModalDescription>
+              </div>
+
+              <ModalCloseButton type = "button" onClick = {closeDetailModal}>
+                <X className = "close-icon" />
+              </ModalCloseButton>
+            </ModalHeader>
+
+            <ModalBody>
+              <InfoGrid>
+                <InfoItem>
+                  <InfoLabel>유형</InfoLabel>
+                  <InfoValue>
+                    <TableBadge
+                      $variant = {
+                        selectedInquiry.type === '문의'
+                          ? 'default'
+                          : selectedInquiry.type === '신고'
+                          ? 'danger'
+                          : 'success'
+                      }
+                    >
+                      {selectedInquiry.type}
+                    </TableBadge>
+                  </InfoValue>
+                </InfoItem>
+
+                <InfoItem>
+                  <InfoLabel>상태</InfoLabel>
+                  <InfoValue>
+                    <TableBadge
+                      $variant = {
+                        selectedInquiry.status === '대기'
+                          ? 'pending'
+                          : selectedInquiry.status === '처리중'
+                          ? 'warning'
+                          : 'success'
+                      }
+                    >
+                      {selectedInquiry.status}
+                    </TableBadge>
+                  </InfoValue>
+                </InfoItem>
+
+                <InfoItem>
+                  <InfoLabel>작성자</InfoLabel>
+                  <InfoValue>{selectedInquiry.author}</InfoValue>
+                </InfoItem>
+
+                <InfoItem>
+                  <InfoLabel>접수일</InfoLabel>
+                  <InfoValue>{selectedInquiry.createdAt}</InfoValue>
+                </InfoItem>
+
+                <InfoItem>
+                  <InfoLabel>제목</InfoLabel>
+                  <InfoValue>{selectedInquiry.title}</InfoValue>
+                </InfoItem>
+
+                <InfoItem>
+                  <InfoLabel>내용</InfoLabel>
+                  <InfoValue>{selectedInquiry.description}</InfoValue>
+                </InfoItem>
+              </InfoGrid>
+
+              <FormGroup>
+                <FormLabel htmlFor = "admin-memo">관리자 메모</FormLabel>
+                <FormTextArea
+                  id = "admin-memo"
+                  value = {memoInput}
+                  onChange = {(e) => setMemoInput(e.target.value)}
+                  placeholder = "처리 내용이나 확인 메모를 입력하세요"
+                />
+              </FormGroup>
+            </ModalBody>
+
+            <ModalFooter>
+              <ModalSecondaryButton type = "button" onClick = {closeDetailModal}>
+                취소
+              </ModalSecondaryButton>
+
+              <ModalPrimaryButton type = "button" onClick = {handleSaveMemo}>
+                메모 저장
+              </ModalPrimaryButton>
+            </ModalFooter>
+          </ModalCard>
+        </ModalOverlay>
+      )}
+
+      {isStatusModalOpen && selectedInquiry && (
+        <ModalOverlay onClick = {closeStatusModal}>
+          <ModalCard onClick = {(e) => e.stopPropagation()}>
+            <ModalHeader>
+              <div>
+                <ModalTitle>문의 상태 변경</ModalTitle>
+                <ModalDescription>
+                  {selectedInquiry.title} 항목의 처리 상태를 변경할 수 있습니다
+                </ModalDescription>
+              </div>
+
+              <ModalCloseButton type = "button" onClick = {closeStatusModal}>
+                <X className = "close-icon" />
+              </ModalCloseButton>
+            </ModalHeader>
+
+            <ModalBody>
+              <OptionList>
+                <OptionButton
+                  type = "button"
+                  $selected = {selectedInquiry.status === '대기'}
+                  onClick = {() => handleChangeStatus('대기')}
+                >
+                  <Clock3 className = "option-icon" />
+                  대기
+                </OptionButton>
+
+                <OptionButton
+                  type = "button"
+                  $selected = {selectedInquiry.status === '처리중'}
+                  onClick = {() => handleChangeStatus('처리중')}
+                >
+                  <AlertTriangle className = "option-icon" />
+                  처리중
+                </OptionButton>
+
+                <OptionButton
+                  type = "button"
+                  $selected = {selectedInquiry.status === '완료'}
+                  onClick = {() => handleChangeStatus('완료')}
+                >
+                  <CheckCircle2 className = "option-icon" />
+                  완료
+                </OptionButton>
+              </OptionList>
+            </ModalBody>
+
+            <ModalFooter>
+              <ModalSecondaryButton type = "button" onClick = {closeStatusModal}>
+                취소
+              </ModalSecondaryButton>
+            </ModalFooter>
+          </ModalCard>
+        </ModalOverlay>
+      )}
+    </>
   );
 }
