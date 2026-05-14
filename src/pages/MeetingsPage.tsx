@@ -12,6 +12,8 @@ import {
   X,
   Share2,
   Copy,
+  FileText,
+  AlertTriangle,
 } from 'lucide-react';
 import {
   PageWrapper,
@@ -74,6 +76,12 @@ import {
   ToastContainer,
   ToastBox,
   ToastCloseButton,
+  EmptyStateCard,
+  EmptyStateIconWrap,
+  EmptyStateTitle,
+  EmptyStateDescription,
+  EmptyStateActionButton,
+  WarningMessage,
 } from './MeetingsPage.styles';
 
 type ViewMode = 'card' | 'list';
@@ -179,6 +187,9 @@ export default function MeetingsPage() {
   const [isMoveFolderMode, setIsMoveFolderMode] = useState(false);
   const [selectedMoveFolder, setSelectedMoveFolder] = useState('');
 
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [deleteTargetMeeting, setDeleteTargetMeeting] = useState<MeetingItem | null>(null);
+
   const [toast, setToast] = useState<{
     open: boolean;
     message: string;
@@ -273,10 +284,26 @@ export default function MeetingsPage() {
     setOpenMeetingMenuId(null);
   };
 
-  const handleDeleteMeeting = (meetingId: number) => {
-    setMeetings((prev) => prev.filter((meeting) => meeting.id !== meetingId));
+  const openDeleteModal = (meeting: MeetingItem) => {
+    setDeleteTargetMeeting(meeting);
     setOpenMeetingMenuId(null);
+    setIsDeleteModalOpen(true);
+  };
+
+  const closeDeleteModal = () => {
+    setDeleteTargetMeeting(null);
+    setIsDeleteModalOpen(false);
+  };
+
+  const handleConfirmDeleteMeeting = () => {
+    if (!deleteTargetMeeting) return;
+
+    setMeetings((prev) =>
+      prev.filter((meeting) => meeting.id !== deleteTargetMeeting.id)
+    );
+
     showToast('회의가 삭제되었습니다.', 'success');
+    closeDeleteModal();
   };
 
   const handleSelectFolder = (folderName: string) => {
@@ -362,6 +389,12 @@ export default function MeetingsPage() {
 
     setIsMoveFolderMode(false);
     showToast('폴더가 변경되었습니다.', 'success');
+  };
+
+  const handleResetFilters = () => {
+    setSearchKeyword('');
+    setStatusFilter('all');
+    setSelectedFolder('전체');
   };
 
   const getStatusBadge = (status: MeetingStatus) => {
@@ -468,121 +501,47 @@ export default function MeetingsPage() {
           </FilterRow>
         </FilterCard>
 
-        {viewMode === 'card' && (
-          <MeetingsGrid>
-            {filteredMeetings.map((meeting) => (
-              <MeetingLink key = {meeting.id} to = {`/dashboard/meetings/${meeting.id}`}>
-                <MeetingCard>
-                  <MeetingTop>
-                    <MeetingLeft>
-                      <MeetingTitle>{meeting.title}</MeetingTitle>
+        {filteredMeetings.length === 0 ? (
+          <EmptyStateCard>
+            <EmptyStateIconWrap>
+              <FileText className = "empty-icon" />
+            </EmptyStateIconWrap>
 
-                      <MeetingMeta>
-                        <Clock className = "meeting-meta-icon" />
-                        <span>{meeting.date}</span>
-                        <span>•</span>
-                        <span>{meeting.duration}</span>
-                      </MeetingMeta>
-                    </MeetingLeft>
+            <EmptyStateTitle>조건에 맞는 회의가 없습니다</EmptyStateTitle>
 
-                    <MeetingMenuWrapper
-                      ref = {(element) => {
-                        meetingMenuRefs.current[meeting.id] = element;
-                      }}
-                      onClick = {(e) => {
-                        e.preventDefault();
-                      }}
-                    >
-                      <MeetingMenuButton
-                        type = "button"
-                        onClick = {(e) => {
-                          e.preventDefault();
-                          toggleMeetingMenu(meeting.id);
-                        }}
-                      >
-                        <MoreVertical className = "meeting-more-icon" />
-                      </MeetingMenuButton>
+            <EmptyStateDescription>
+              검색어 또는 필터 조건을 바꾸면 다른 회의를 확인할 수 있습니다.
+            </EmptyStateDescription>
 
-                      {openMeetingMenuId === meeting.id && (
-                        <MeetingMenu>
-                          <MeetingMenuItem type = "button" onClick = {closeMeetingMenu}>
-                            수정하기
-                          </MeetingMenuItem>
+            <EmptyStateActionButton type = "button" onClick = {handleResetFilters}>
+              필터 초기화
+            </EmptyStateActionButton>
+          </EmptyStateCard>
+        ) : (
+          <>
+            {viewMode === 'card' && (
+              <MeetingsGrid>
+                {filteredMeetings.map((meeting) => (
+                  <MeetingLink key = {meeting.id} to = {`/dashboard/meetings/${meeting.id}`}>
+                    <MeetingCard>
+                      <MeetingTop>
+                        <MeetingLeft>
+                          <MeetingTitle>{meeting.title}</MeetingTitle>
 
-                          <MeetingMenuItem
-                            type = "button"
-                            onClick = {() => openShareModal(meeting)}
-                          >
-                            공유하기
-                          </MeetingMenuItem>
+                          <MeetingMeta>
+                            <Clock className = "meeting-meta-icon" />
+                            <span>{meeting.date}</span>
+                            <span>•</span>
+                            <span>{meeting.duration}</span>
+                          </MeetingMeta>
+                        </MeetingLeft>
 
-                          <MeetingMenuItem
-                            type = "button"
-                            $danger = {true}
-                            onClick = {() => handleDeleteMeeting(meeting.id)}
-                          >
-                            삭제하기
-                          </MeetingMenuItem>
-                        </MeetingMenu>
-                      )}
-                    </MeetingMenuWrapper>
-                  </MeetingTop>
-
-                  <MeetingSummary>{meeting.summary}</MeetingSummary>
-
-                  <MeetingBottom>
-                    <MeetingTags>
-                      {meeting.tags.map((tag) => (
-                        <TagBadge key = {tag}>{tag}</TagBadge>
-                      ))}
-                    </MeetingTags>
-
-                    {getStatusBadge(meeting.status)}
-                  </MeetingBottom>
-
-                  <MeetingFooter>
-                    <MeetingFolderRow>
-                      <Folder className = "folder-icon" />
-                      <span>{meeting.folder}</span>
-                    </MeetingFolderRow>
-                  </MeetingFooter>
-                </MeetingCard>
-              </MeetingLink>
-            ))}
-          </MeetingsGrid>
-        )}
-
-        {viewMode === 'list' && (
-          <ListCard>
-            <ListTableWrapper>
-              <ListTable>
-                <thead>
-                  <tr>
-                    <th>제목</th>
-                    <th>날짜</th>
-                    <th>시간</th>
-                    <th>상태</th>
-                    <th>폴더</th>
-                    <th>작업</th>
-                  </tr>
-                </thead>
-
-                <tbody>
-                  {filteredMeetings.map((meeting) => (
-                    <tr key = {meeting.id}>
-                      <td>
-                        <TableMeetingLink to = {`/dashboard/meetings/${meeting.id}`}>
-                          {meeting.title}
-                        </TableMeetingLink>
-                      </td>
-                      <td>{meeting.date}</td>
-                      <td>{meeting.duration}</td>
-                      <td>{getStatusBadge(meeting.status)}</td>
-                      <td>{meeting.folder}</td>
-                      <td>
                         <MeetingMenuWrapper
                           ref = {(element) => {
                             meetingMenuRefs.current[meeting.id] = element;
+                          }}
+                          onClick = {(e) => {
+                            e.preventDefault();
                           }}
                         >
                           <MeetingMenuButton
@@ -596,7 +555,7 @@ export default function MeetingsPage() {
                           </MeetingMenuButton>
 
                           {openMeetingMenuId === meeting.id && (
-                            <MeetingMenu $alignRight = {true}>
+                            <MeetingMenu>
                               <MeetingMenuItem type = "button" onClick = {closeMeetingMenu}>
                                 수정하기
                               </MeetingMenuItem>
@@ -611,20 +570,114 @@ export default function MeetingsPage() {
                               <MeetingMenuItem
                                 type = "button"
                                 $danger = {true}
-                                onClick = {() => handleDeleteMeeting(meeting.id)}
+                                onClick = {() => openDeleteModal(meeting)}
                               >
                                 삭제하기
                               </MeetingMenuItem>
                             </MeetingMenu>
                           )}
                         </MeetingMenuWrapper>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </ListTable>
-            </ListTableWrapper>
-          </ListCard>
+                      </MeetingTop>
+
+                      <MeetingSummary>{meeting.summary}</MeetingSummary>
+
+                      <MeetingBottom>
+                        <MeetingTags>
+                          {meeting.tags.map((tag) => (
+                            <TagBadge key = {tag}>{tag}</TagBadge>
+                          ))}
+                        </MeetingTags>
+
+                        {getStatusBadge(meeting.status)}
+                      </MeetingBottom>
+
+                      <MeetingFooter>
+                        <MeetingFolderRow>
+                          <Folder className = "folder-icon" />
+                          <span>{meeting.folder}</span>
+                        </MeetingFolderRow>
+                      </MeetingFooter>
+                    </MeetingCard>
+                  </MeetingLink>
+                ))}
+              </MeetingsGrid>
+            )}
+
+            {viewMode === 'list' && (
+              <ListCard>
+                <ListTableWrapper>
+                  <ListTable>
+                    <thead>
+                      <tr>
+                        <th>제목</th>
+                        <th>날짜</th>
+                        <th>시간</th>
+                        <th>상태</th>
+                        <th>폴더</th>
+                        <th>작업</th>
+                      </tr>
+                    </thead>
+
+                    <tbody>
+                      {filteredMeetings.map((meeting) => (
+                        <tr key = {meeting.id}>
+                          <td>
+                            <TableMeetingLink to = {`/dashboard/meetings/${meeting.id}`}>
+                              {meeting.title}
+                            </TableMeetingLink>
+                          </td>
+                          <td>{meeting.date}</td>
+                          <td>{meeting.duration}</td>
+                          <td>{getStatusBadge(meeting.status)}</td>
+                          <td>{meeting.folder}</td>
+                          <td>
+                            <MeetingMenuWrapper
+                              ref = {(element) => {
+                                meetingMenuRefs.current[meeting.id] = element;
+                              }}
+                            >
+                              <MeetingMenuButton
+                                type = "button"
+                                onClick = {(e) => {
+                                  e.preventDefault();
+                                  toggleMeetingMenu(meeting.id);
+                                }}
+                              >
+                                <MoreVertical className = "meeting-more-icon" />
+                              </MeetingMenuButton>
+
+                              {openMeetingMenuId === meeting.id && (
+                                <MeetingMenu $alignRight = {true}>
+                                  <MeetingMenuItem type = "button" onClick = {closeMeetingMenu}>
+                                    수정하기
+                                  </MeetingMenuItem>
+
+                                  <MeetingMenuItem
+                                    type = "button"
+                                    onClick = {() => openShareModal(meeting)}
+                                  >
+                                    공유하기
+                                  </MeetingMenuItem>
+
+                                  <MeetingMenuItem
+                                    type = "button"
+                                    $danger = {true}
+                                    onClick = {() => openDeleteModal(meeting)}
+                                  >
+                                    삭제하기
+                                  </MeetingMenuItem>
+                                </MeetingMenu>
+                              )}
+                            </MeetingMenuWrapper>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </ListTable>
+                </ListTableWrapper>
+              </ListCard>
+            )}
+          </>
         )}
       </PageWrapper>
 
@@ -773,6 +826,52 @@ export default function MeetingsPage() {
                 </ModalSecondaryButton>
               </ModalFooter>
             )}
+          </ModalCard>
+        </ModalOverlay>
+      )}
+
+      {isDeleteModalOpen && deleteTargetMeeting && (
+        <ModalOverlay onClick = {closeDeleteModal}>
+          <ModalCard onClick = {(e) => e.stopPropagation()}>
+            <ModalHeader>
+              <div>
+                <ModalTitle>회의를 삭제하시겠습니까?</ModalTitle>
+                <ModalDescription>
+                  삭제한 회의는 목록에서 바로 사라지며 복구할 수 없습니다.
+                </ModalDescription>
+              </div>
+
+              <ModalCloseButton type = "button" onClick = {closeDeleteModal}>
+                <X className = "close-icon" />
+              </ModalCloseButton>
+            </ModalHeader>
+
+            <ModalBody>
+              <ModalField>
+                <ModalLabel>회의 제목</ModalLabel>
+                <ShareLinkText>{deleteTargetMeeting.title}</ShareLinkText>
+              </ModalField>
+
+              <ModalField>
+                <ModalLabel>폴더</ModalLabel>
+                <ShareLinkText>{deleteTargetMeeting.folder}</ShareLinkText>
+              </ModalField>
+
+              <WarningMessage>
+                <AlertTriangle className = "warning-icon" />
+                <span>삭제 후에는 이 회의를 다시 확인할 수 없습니다.</span>
+              </WarningMessage>
+            </ModalBody>
+
+            <ModalFooter>
+              <ModalSecondaryButton type = "button" onClick = {closeDeleteModal}>
+                취소
+              </ModalSecondaryButton>
+
+              <ModalPrimaryButton type = "button" onClick = {handleConfirmDeleteMeeting}>
+                삭제하기
+              </ModalPrimaryButton>
+            </ModalFooter>
           </ModalCard>
         </ModalOverlay>
       )}
