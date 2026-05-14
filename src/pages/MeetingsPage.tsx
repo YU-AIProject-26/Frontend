@@ -356,7 +356,7 @@ export default function MeetingsPage() {
   const handleCopyShareLink = async () => {
     if (!shareTargetMeeting) return;
 
-    const shareLink = `${window.location.origin}/dashboard/meetings/${shareTargetMeeting.id}`;
+    const shareLink = `${window.location.origin}/meetings/${shareTargetMeeting.id}`;
 
     try {
       await navigator.clipboard.writeText(shareLink);
@@ -522,7 +522,7 @@ export default function MeetingsPage() {
             {viewMode === 'card' && (
               <MeetingsGrid>
                 {filteredMeetings.map((meeting) => (
-                  <MeetingLink key = {meeting.id} to = {`/dashboard/meetings/${meeting.id}`}>
+                  <MeetingLink key = {meeting.id} to = {`/meetings/${meeting.id}`}>
                     <MeetingCard>
                       <MeetingTop>
                         <MeetingLeft>
@@ -622,7 +622,7 @@ export default function MeetingsPage() {
                       {filteredMeetings.map((meeting) => (
                         <tr key = {meeting.id}>
                           <td>
-                            <TableMeetingLink to = {`/dashboard/meetings/${meeting.id}`}>
+                            <TableMeetingLink to = {`/meetings/${meeting.id}`}>
                               {meeting.title}
                             </TableMeetingLink>
                           </td>
@@ -751,7 +751,7 @@ export default function MeetingsPage() {
 
                 <ShareLinkBox>
                   <ShareLinkText>
-                    {window.location.origin}/dashboard/meetings/{shareTargetMeeting.id}
+                    {window.location.origin}/meetings/{shareTargetMeeting.id}
                   </ShareLinkText>
 
                   <ShareOptionButton type = "button" onClick = {handleCopyShareLink}>
