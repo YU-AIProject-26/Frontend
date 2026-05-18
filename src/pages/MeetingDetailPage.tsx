@@ -236,6 +236,8 @@ export default function MeetingDetailPage() {
   const [isEditingTranscript, setIsEditingTranscript] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isAddTodoModalOpen, setIsAddTodoModalOpen] = useState(false);
+  const [isAddScheduleModalOpen, setIsAddScheduleModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'participation' | 'engagement'>(
     'participation'
   );
@@ -292,6 +294,44 @@ export default function MeetingDetailPage() {
     },
   ]);
 
+  const [schedules, setSchedules] = useState<ScheduleItemType[]>([
+    {
+      id: 1,
+      title: '인플루언서 킥오프 미팅',
+      date: '2026-04-20',
+      time: '14:00',
+      attendees: '김철수, 이영희',
+    },
+    {
+      id: 2,
+      title: 'Q2 캠페인 최종 리뷰',
+      date: '2026-04-25',
+      time: '10:00',
+      attendees: '전체 참석',
+    },
+    {
+      id: 3,
+      title: '마케팅 성과 주간 체크인',
+      date: '2026-04-14',
+      time: '15:00',
+      attendees: '마케팅팀',
+    },
+  ]);
+
+  const [newTodoForm, setNewTodoForm] = useState({
+    text: '',
+    assignee: '',
+    dueDate: '',
+    priority: 'medium' as 'high' | 'medium',
+  });
+
+  const [newScheduleForm, setNewScheduleForm] = useState({
+    title: '',
+    date: '',
+    time: '',
+    attendees: '',
+  });
+
   const [toast, setToast] = useState<{
     open: boolean;
     message: string;
@@ -316,30 +356,6 @@ export default function MeetingDetailPage() {
       '회의 효율성이 높았으며, 참석자들의 참여도가 고르게 분포되어 있습니다. 실행 항목이 명확하게 정리되었고, 담당자와 마감일이 모두 지정되었습니다.',
     score: 82,
   };
-
-  const schedules: ScheduleItemType[] = [
-    {
-      id: 1,
-      title: '인플루언서 킥오프 미팅',
-      date: '2026-04-20',
-      time: '14:00',
-      attendees: '김철수, 이영희',
-    },
-    {
-      id: 2,
-      title: 'Q2 캠페인 최종 리뷰',
-      date: '2026-04-25',
-      time: '10:00',
-      attendees: '전체 참석',
-    },
-    {
-      id: 3,
-      title: '마케팅 성과 주간 체크인',
-      date: '2026-04-14',
-      time: '15:00',
-      attendees: '마케팅팀',
-    },
-  ];
 
   const participantNames = useMemo(() => {
     return Array.from(
@@ -595,9 +611,6 @@ export default function MeetingDetailPage() {
         '[대화 내용]',
         transcriptText,
         '',
-        '==============================',
-        '끝',
-        '==============================',
       ].join('\n');
 
       const blob = new Blob([txtContent], {
@@ -636,6 +649,88 @@ export default function MeetingDetailPage() {
   const handleConfirmDelete = () => {
     setIsDeleteModalOpen(false);
     navigate('/meetings');
+  };
+
+  const handleOpenAddTodoModal = () => {
+    setNewTodoForm({
+      text: '',
+      assignee: '',
+      dueDate: '',
+      priority: 'medium',
+    });
+    setIsAddTodoModalOpen(true);
+  };
+
+  const handleCloseAddTodoModal = () => {
+    setIsAddTodoModalOpen(false);
+  };
+
+  const handleAddTodo = () => {
+    if (!newTodoForm.text.trim() || !newTodoForm.assignee.trim() || !newTodoForm.dueDate) {
+      showToast('할 일 정보를 모두 입력해주세요.', 'error');
+      return;
+    }
+
+    const nextId =
+      todoItems.length > 0 ? Math.max(...todoItems.map((item) => item.id)) + 1 : 1;
+
+    setTodoItems((prev) => [
+      ...prev,
+      {
+        id: nextId,
+        text: newTodoForm.text.trim(),
+        assignee: newTodoForm.assignee.trim(),
+        dueDate: newTodoForm.dueDate,
+        priority: newTodoForm.priority,
+        completed: false,
+      },
+    ]);
+
+    setIsAddTodoModalOpen(false);
+    showToast('할 일이 추가되었습니다.', 'success');
+  };
+
+  const handleOpenAddScheduleModal = () => {
+    setNewScheduleForm({
+      title: '',
+      date: '',
+      time: '',
+      attendees: '',
+    });
+    setIsAddScheduleModalOpen(true);
+  };
+
+  const handleCloseAddScheduleModal = () => {
+    setIsAddScheduleModalOpen(false);
+  };
+
+  const handleAddSchedule = () => {
+    if (
+      !newScheduleForm.title.trim() ||
+      !newScheduleForm.date ||
+      !newScheduleForm.time ||
+      !newScheduleForm.attendees.trim()
+    ) {
+      showToast('일정 정보를 모두 입력해주세요.', 'error');
+      return;
+    }
+
+    const nextId =
+      schedules.length > 0 ? Math.max(...schedules.map((item) => item.id)) + 1 : 1;
+
+    setSchedules((prev) => [
+      ...prev,
+      {
+        id: nextId,
+        title: newScheduleForm.title.trim(),
+        date: newScheduleForm.date,
+        time: newScheduleForm.time,
+        attendees: newScheduleForm.attendees.trim(),
+      },
+    ]);
+
+    setIsAddScheduleModalOpen(false);
+    showToast('일정이 추가되었습니다.', 'success');
   };
 
   const toggleTodo = (todoId: number) => {
@@ -1180,6 +1275,11 @@ export default function MeetingDetailPage() {
                   <CheckSquare className = "title-icon green" />
                   추출된 할 일
                 </CardTitle>
+
+                <EmptyButton type = "button" onClick = {handleOpenAddTodoModal}>
+                  <Plus className = "button-icon" />
+                  추가
+                </EmptyButton>
               </CardHeaderRow>
 
               <TodoList>
@@ -1216,6 +1316,11 @@ export default function MeetingDetailPage() {
                   <CalendarIcon className = "title-icon blue" />
                   생성된 일정
                 </CardTitle>
+
+                <EmptyButton type = "button" onClick = {handleOpenAddScheduleModal}>
+                  <Plus className = "button-icon" />
+                  추가
+                </EmptyButton>
               </CardHeaderRow>
 
               <ScheduleList>
@@ -1332,6 +1437,201 @@ export default function MeetingDetailPage() {
                   onClick = {handleConfirmDelete}
                 >
                   삭제하기
+                </ModalPrimaryButton>
+              </ModalFooter>
+            </ModalCard>
+          </ModalOverlay>
+        )}
+
+        {isAddTodoModalOpen && (
+          <ModalOverlay onClick = {handleCloseAddTodoModal}>
+            <ModalCard onClick = {(e) => e.stopPropagation()}>
+              <ModalHeader>
+                <div>
+                  <ModalTitle>추출된 할 일 추가</ModalTitle>
+                  <ModalDescription>
+                    회의 결과에 반영할 할 일을 추가합니다.
+                  </ModalDescription>
+                </div>
+
+                <ModalCloseButton
+                  type = "button"
+                  onClick = {handleCloseAddTodoModal}
+                >
+                  <X className = "close-icon" />
+                </ModalCloseButton>
+              </ModalHeader>
+
+              <ModalBody>
+                <ModalField>
+                  <ModalLabel>할 일</ModalLabel>
+                  <ModalInput
+                    value = {newTodoForm.text}
+                    onChange = {(e) =>
+                      setNewTodoForm((prev) => ({
+                        ...prev,
+                        text: e.target.value,
+                      }))
+                    }
+                    placeholder = "할 일 내용을 입력하세요"
+                  />
+                </ModalField>
+
+                <ModalField>
+                  <ModalLabel>담당자</ModalLabel>
+                  <ModalInput
+                    value = {newTodoForm.assignee}
+                    onChange = {(e) =>
+                      setNewTodoForm((prev) => ({
+                        ...prev,
+                        assignee: e.target.value,
+                      }))
+                    }
+                    placeholder = "담당자 이름을 입력하세요"
+                  />
+                </ModalField>
+
+                <ModalField>
+                  <ModalLabel>마감일</ModalLabel>
+                  <ModalInput
+                    type = "date"
+                    value = {newTodoForm.dueDate}
+                    onChange = {(e) =>
+                      setNewTodoForm((prev) => ({
+                        ...prev,
+                        dueDate: e.target.value,
+                      }))
+                    }
+                  />
+                </ModalField>
+
+                <ModalField>
+                  <ModalLabel>우선순위</ModalLabel>
+                  <ModalInput
+                    as = "select"
+                    value = {newTodoForm.priority}
+                    onChange = {(e) =>
+                      setNewTodoForm((prev) => ({
+                        ...prev,
+                        priority: e.target.value as 'high' | 'medium',
+                      }))
+                    }
+                  >
+                    <option value = "high">높음</option>
+                    <option value = "medium">중간</option>
+                  </ModalInput>
+                </ModalField>
+              </ModalBody>
+
+              <ModalFooter>
+                <ModalSecondaryButton
+                  type = "button"
+                  onClick = {handleCloseAddTodoModal}
+                >
+                  취소
+                </ModalSecondaryButton>
+
+                <ModalPrimaryButton
+                  type = "button"
+                  onClick = {handleAddTodo}
+                >
+                  추가하기
+                </ModalPrimaryButton>
+              </ModalFooter>
+            </ModalCard>
+          </ModalOverlay>
+        )}
+
+        {isAddScheduleModalOpen && (
+          <ModalOverlay onClick = {handleCloseAddScheduleModal}>
+            <ModalCard onClick = {(e) => e.stopPropagation()}>
+              <ModalHeader>
+                <div>
+                  <ModalTitle>생성된 일정 추가</ModalTitle>
+                  <ModalDescription>
+                    회의 결과에 반영할 일정을 추가합니다.
+                  </ModalDescription>
+                </div>
+
+                <ModalCloseButton
+                  type = "button"
+                  onClick = {handleCloseAddScheduleModal}
+                >
+                  <X className = "close-icon" />
+                </ModalCloseButton>
+              </ModalHeader>
+
+              <ModalBody>
+                <ModalField>
+                  <ModalLabel>일정 제목</ModalLabel>
+                  <ModalInput
+                    value = {newScheduleForm.title}
+                    onChange = {(e) =>
+                      setNewScheduleForm((prev) => ({
+                        ...prev,
+                        title: e.target.value,
+                      }))
+                    }
+                    placeholder = "일정 제목을 입력하세요"
+                  />
+                </ModalField>
+
+                <ModalField>
+                  <ModalLabel>날짜</ModalLabel>
+                  <ModalInput
+                    type = "date"
+                    value = {newScheduleForm.date}
+                    onChange = {(e) =>
+                      setNewScheduleForm((prev) => ({
+                        ...prev,
+                        date: e.target.value,
+                      }))
+                    }
+                  />
+                </ModalField>
+
+                <ModalField>
+                  <ModalLabel>시간</ModalLabel>
+                  <ModalInput
+                    type = "time"
+                    value = {newScheduleForm.time}
+                    onChange = {(e) =>
+                      setNewScheduleForm((prev) => ({
+                        ...prev,
+                        time: e.target.value,
+                      }))
+                    }
+                  />
+                </ModalField>
+
+                <ModalField>
+                  <ModalLabel>참석자</ModalLabel>
+                  <ModalInput
+                    value = {newScheduleForm.attendees}
+                    onChange = {(e) =>
+                      setNewScheduleForm((prev) => ({
+                        ...prev,
+                        attendees: e.target.value,
+                      }))
+                    }
+                    placeholder = "참석자를 입력하세요"
+                  />
+                </ModalField>
+              </ModalBody>
+
+              <ModalFooter>
+                <ModalSecondaryButton
+                  type = "button"
+                  onClick = {handleCloseAddScheduleModal}
+                >
+                  취소
+                </ModalSecondaryButton>
+
+                <ModalPrimaryButton
+                  type = "button"
+                  onClick = {handleAddSchedule}
+                >
+                  추가하기
                 </ModalPrimaryButton>
               </ModalFooter>
             </ModalCard>
