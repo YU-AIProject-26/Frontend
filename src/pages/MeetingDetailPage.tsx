@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft,
   Share2,
@@ -129,7 +129,6 @@ import {
   TranscriptEditInput,
   TranscriptEditTimeInput,
   TranscriptEditTextarea,
-  TranscriptEditActions,
   TranscriptHighlightToggle,
   TranscriptAddButton,
   ToastContainer,
@@ -230,10 +229,13 @@ const initialTranscript: TranscriptItemType[] = [
 ];
 
 export default function MeetingDetailPage() {
+  const navigate = useNavigate();
+
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime] = useState(245);
   const [isEditingTranscript, setIsEditingTranscript] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'participation' | 'engagement'>(
     'participation'
   );
@@ -443,6 +445,123 @@ export default function MeetingDetailPage() {
   const formatMeetingDate = (date: string) => {
     const target = new Date(date);
     return `${target.getFullYear()}년 ${target.getMonth() + 1}월 ${target.getDate()}일`;
+  };
+
+  const handleDownloadMeeting = () => {
+    try {
+      const participantText =
+        participantNames.length > 0 ? participantNames.join(', ') : '없음';
+
+      const transcriptText = transcriptItems
+        .map((item, index) => {
+          return [
+            `${index + 1}. [${item.time}] ${item.speaker || '이름 없음'}${
+              item.highlight ? ' (핵심 발언)' : ''
+            }`,
+            item.text,
+          ].join('\n');
+        })
+        .join('\n\n');
+
+      const todoText = todoItems
+        .map((item, index) => {
+          return [
+            `${index + 1}. ${item.text}`,
+            `   - 담당자: ${item.assignee}`,
+            `   - 마감일: ${item.dueDate}`,
+            `   - 우선순위: ${item.priority === 'high' ? '높음' : '중간'}`,
+            `   - 상태: ${item.completed ? '완료' : '미완료'}`,
+          ].join('\n');
+        })
+        .join('\n\n');
+
+      const scheduleText = schedules
+        .map((item, index) => {
+          return [
+            `${index + 1}. ${item.title}`,
+            `   - 일시: ${item.date} ${item.time}`,
+            `   - 참석: ${item.attendees}`,
+          ].join('\n');
+        })
+        .join('\n\n');
+
+      const keyPointText = summary.keyPoints
+        .map((item, index) => `${index + 1}. ${item}`)
+        .join('\n');
+
+      const txtContent = [
+        '==============================',
+        '회의 보고서',
+        '==============================',
+        '',
+        '[기본 정보]',
+        `회의 제목: ${meeting.title}`,
+        `회의 날짜: ${formatMeetingDate(meeting.date)}`,
+        `회의 시간: ${meeting.time}`,
+        `회의 길이: ${meeting.duration}`,
+        `참여 인원: ${participantCount}명`,
+        `참여자 목록: ${participantText}`,
+        `태그: ${meeting.tags.join(', ')}`,
+        '',
+        '[회의 요약]',
+        summary.main,
+        '',
+        '[핵심 내용]',
+        keyPointText,
+        '',
+        '[효율성 점수]',
+        `${summary.score}점`,
+        '',
+        '[인사이트]',
+        summary.insights,
+        '',
+        '[실행 항목]',
+        todoText,
+        '',
+        '[생성된 일정]',
+        scheduleText,
+        '',
+        '[대화 내용]',
+        transcriptText,
+        '',
+      ].join('\n');
+
+      const blob = new Blob([txtContent], {
+        type: 'text/plain;charset=utf-8',
+      });
+
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+
+      link.href = url;
+      link.download = `${meeting.title}.txt`;
+
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      URL.revokeObjectURL(url);
+
+      setIsMoreMenuOpen(false);
+      showToast('회의 txt 다운로드가 시작되었습니다.', 'success');
+    } catch (error) {
+      console.error('txt 다운로드 실패:', error);
+      showToast('txt 다운로드에 실패했습니다.', 'error');
+    }
+  };
+
+  const handleOpenDeleteModal = () => {
+    setIsMoreMenuOpen(false);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleCloseDeleteModal = () => {
+    setIsDeleteModalOpen(false);
+  };
+
+  const handleConfirmDelete = () => {
+    setIsDeleteModalOpen(false);
+    navigate('/meetings');
   };
 
   const toggleTodo = (todoId: number) => {
@@ -669,8 +788,17 @@ export default function MeetingDetailPage() {
 
                     {isMoreMenuOpen && (
                       <DropdownMenu>
-                        <DropdownMenuItem type = "button">다운로드</DropdownMenuItem>
-                        <DropdownMenuItem type = "button" $danger = {true}>
+                        <DropdownMenuItem
+                          type = "button"
+                          onClick = {handleDownloadMeeting}
+                        >
+                          다운로드
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          type = "button"
+                          $danger = {true}
+                          onClick = {handleOpenDeleteModal}
+                        >
                           삭제
                         </DropdownMenuItem>
                       </DropdownMenu>
@@ -1066,6 +1194,58 @@ export default function MeetingDetailPage() {
                   onClick = {handleCopyShareLink}
                 >
                   공유 링크 복사
+                </ModalPrimaryButton>
+              </ModalFooter>
+            </ModalCard>
+          </ModalOverlay>
+        )}
+
+        {isDeleteModalOpen && (
+          <ModalOverlay onClick = {handleCloseDeleteModal}>
+            <ModalCard onClick = {(e) => e.stopPropagation()}>
+              <ModalHeader>
+                <div>
+                  <ModalTitle>회의를 삭제하시겠습니까?</ModalTitle>
+                  <ModalDescription>
+                    삭제한 회의는 목록에서 더 이상 표시되지 않습니다.
+                  </ModalDescription>
+                </div>
+
+                <ModalCloseButton
+                  type = "button"
+                  onClick = {handleCloseDeleteModal}
+                >
+                  <X className = "close-icon" />
+                </ModalCloseButton>
+              </ModalHeader>
+
+              <ModalBody>
+                <ModalField>
+                  <ModalLabel>회의 제목</ModalLabel>
+                  <ModalInput value = {meeting.title} readOnly />
+                </ModalField>
+
+                <ModalField>
+                  <ModalLabel>삭제 안내</ModalLabel>
+                  <ModalHelperText>
+                    삭제 후에는 이 회의를 다시 확인할 수 없습니다.
+                  </ModalHelperText>
+                </ModalField>
+              </ModalBody>
+
+              <ModalFooter>
+                <ModalSecondaryButton
+                  type = "button"
+                  onClick = {handleCloseDeleteModal}
+                >
+                  취소
+                </ModalSecondaryButton>
+
+                <ModalPrimaryButton
+                  type = "button"
+                  onClick = {handleConfirmDelete}
+                >
+                  삭제하기
                 </ModalPrimaryButton>
               </ModalFooter>
             </ModalCard>
