@@ -232,7 +232,7 @@ export default function MeetingDetailPage() {
   const navigate = useNavigate();
 
   const [isPlaying, setIsPlaying] = useState(false);
-  const [currentTime] = useState(245);
+  const [currentTime, setCurrentTime] = useState(245);
   const [isEditingTranscript, setIsEditingTranscript] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -395,6 +395,26 @@ export default function MeetingDetailPage() {
     };
   }, [toast.open]);
 
+  useEffect(() => {
+    if (!isPlaying) return;
+
+    const timer = window.setInterval(() => {
+      setCurrentTime((prev) => {
+        if (prev >= meeting.totalSeconds) {
+          window.clearInterval(timer);
+          setIsPlaying(false);
+          return meeting.totalSeconds;
+        }
+
+        return prev + 1;
+      });
+    }, 1000);
+
+    return () => {
+      window.clearInterval(timer);
+    };
+  }, [isPlaying, meeting.totalSeconds]);
+
   const showToast = (message: string, variant: 'success' | 'error' = 'success') => {
     setToast({
       open: true,
@@ -423,9 +443,10 @@ export default function MeetingDetailPage() {
   };
 
   const formatAudioDisplayTime = (seconds: number, shouldShowHour: boolean) => {
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-    const secs = seconds % 60;
+    const safeSeconds = Math.max(0, seconds);
+    const hours = Math.floor(safeSeconds / 3600);
+    const minutes = Math.floor((safeSeconds % 3600) / 60);
+    const secs = safeSeconds % 60;
 
     if (shouldShowHour) {
       return `${hours}:${minutes.toString().padStart(2, '0')}:${secs
@@ -433,11 +454,50 @@ export default function MeetingDetailPage() {
         .padStart(2, '0')}`;
     }
 
-    const totalMinutes = Math.floor(seconds / 60);
+    const totalMinutes = Math.floor(safeSeconds / 60);
     return `${totalMinutes}:${secs.toString().padStart(2, '0')}`;
   };
 
   const shouldShowHourFormat = meeting.totalSeconds >= 3600;
+
+  const parseTranscriptTimeToSeconds = (time: string) => {
+    const parts = time.split(':').map(Number);
+
+    if (parts.length === 3) {
+      const [hours, minutes, seconds] = parts;
+      return hours * 3600 + minutes * 60 + seconds;
+    }
+
+    if (parts.length === 2) {
+      const [minutes, seconds] = parts;
+      return minutes * 60 + seconds;
+    }
+
+    return 0;
+  };
+
+  const handleTranscriptSeek = (time: string) => {
+    const nextTime = parseTranscriptTimeToSeconds(time);
+    const safeTime = Math.max(0, Math.min(meeting.totalSeconds, nextTime));
+
+    setCurrentTime(safeTime);
+    setIsPlaying(true);
+  };
+
+  const handleSeekAudio = (
+    event: React.MouseEvent<HTMLDivElement, MouseEvent>
+  ) => {
+    const rect = event.currentTarget.getBoundingClientRect();
+    const clickX = event.clientX - rect.left;
+    const ratio = clickX / rect.width;
+
+    const nextTime = Math.max(
+      0,
+      Math.min(meeting.totalSeconds, Math.floor(meeting.totalSeconds * ratio))
+    );
+
+    setCurrentTime(nextTime);
+  };
 
   const formatDueDate = (date: string) => {
     return new Date(date).toLocaleDateString('ko-KR', {
@@ -535,6 +595,9 @@ export default function MeetingDetailPage() {
         '[대화 내용]',
         transcriptText,
         '',
+        '==============================',
+        '끝',
+        '==============================',
       ].join('\n');
 
       const blob = new Blob([txtContent], {
@@ -862,11 +925,14 @@ export default function MeetingDetailPage() {
                         {formatAudioDisplayTime(currentTime, shouldShowHourFormat)}
                       </span>
                       <span>
-                        {formatAudioDisplayTime(meeting.totalSeconds, shouldShowHourFormat)}
+                        {formatAudioDisplayTime(
+                          meeting.totalSeconds,
+                          shouldShowHourFormat
+                        )}
                       </span>
                     </AudioTimeRow>
 
-                    <ProgressTrack>
+                    <ProgressTrack onClick = {handleSeekAudio}>
                       <ProgressFill
                         style = {{
                           width: `${(currentTime / meeting.totalSeconds) * 100}%`,
@@ -894,7 +960,12 @@ export default function MeetingDetailPage() {
               <TranscriptList>
                 {transcriptItems.map((item) =>
                   !isEditingTranscript ? (
-                    <TranscriptItem key = {item.id} $highlight = {item.highlight}>
+                    <TranscriptItem
+                      key = {item.id}
+                      $highlight = {item.highlight}
+                      onClick = {() => handleTranscriptSeek(item.time)}
+                      style = {{ cursor: 'pointer' }}
+                    >
                       <TranscriptSpeakerRow>
                         <SpeakerAvatar>
                           {item.speaker.trim() ? item.speaker.trim()[0] : '?'}
