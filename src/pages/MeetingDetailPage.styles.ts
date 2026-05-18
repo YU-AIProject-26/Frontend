@@ -1323,3 +1323,68 @@ export const ModalSecondaryButton = styled.button`
     }
   }
 `;
+
+export const ToastContainer = styled.div`
+  position: fixed;
+  left: 50%;
+  bottom: 2rem;
+  transform: translateX(-50%);
+  z-index: 1300;
+`;
+
+export const ToastBox = styled.div<{ $variant: 'success' | 'error' }>`
+  min-width: 18rem;
+  max-width: 28rem;
+  min-height: 3rem;
+  padding: 0.75rem 0.875rem 0.75rem 1rem;
+  border-radius: 0.875rem;
+  border: 1px solid
+    ${({ $variant }) =>
+      $variant === 'success' ? 'rgba(34, 197, 94, 0.25)' : 'rgba(239, 68, 68, 0.25)'};
+  background: ${({ $variant }) =>
+    $variant === 'success' ? 'rgba(34, 197, 94, 0.12)' : 'rgba(239, 68, 68, 0.12)'};
+  color: ${({ $variant }) => ($variant === 'success' ? '#166534' : '#dc2626')};
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.12);
+  backdrop-filter: blur(14px);
+  font-size: 0.875rem;
+  font-weight: 600;
+
+  html.dark & {
+    color: ${({ $variant }) => ($variant === 'success' ? '#86efac' : '#fca5a5')};
+    background: ${({ $variant }) =>
+      $variant === 'success'
+        ? 'rgba(34, 197, 94, 0.14)'
+        : 'rgba(239, 68, 68, 0.14)'};
+    border-color: ${({ $variant }) =>
+      $variant === 'success'
+        ? 'rgba(34, 197, 94, 0.2)'
+        : 'rgba(239, 68, 68, 0.2)'};
+  }
+`;
+
+export const ToastCloseButton = styled.button`
+  width: 1.75rem;
+  height: 1.75rem;
+  padding: 0;
+  border: none;
+  border-radius: 9999px;
+  background: transparent;
+  color: inherit;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  .toast-close-icon {
+    width: 0.875rem;
+    height: 0.875rem;
+  }
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.12);
+  }
+`;

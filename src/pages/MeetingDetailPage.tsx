@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   ArrowLeft,
@@ -132,6 +132,9 @@ import {
   TranscriptEditActions,
   TranscriptHighlightToggle,
   TranscriptAddButton,
+  ToastContainer,
+  ToastBox,
+  ToastCloseButton,
 } from './MeetingDetailPage.styles';
 
 type TranscriptItemType = {
@@ -287,6 +290,16 @@ export default function MeetingDetailPage() {
     },
   ]);
 
+  const [toast, setToast] = useState<{
+    open: boolean;
+    message: string;
+    variant: 'success' | 'error';
+  }>({
+    open: false,
+    message: '',
+    variant: 'success',
+  });
+
   const summary = {
     main:
       'Q2 마케팅 캠페인 전략 수립 및 예산 논의를 진행했습니다. 신규 고객 타겟팅 전략과 기존 고객 유지 방안을 중심으로 논의했으며, 총 예산 3억원 중 60%를 디지털 마케팅에 집행하기로 결정했습니다.',
@@ -364,6 +377,48 @@ export default function MeetingDetailPage() {
     { time: '45-60분', score: 88 },
     { time: '60-75분', score: 82 },
   ];
+
+  useEffect(() => {
+    if (!toast.open) return;
+
+    const timer = window.setTimeout(() => {
+      setToast((prev) => ({
+        ...prev,
+        open: false,
+      }));
+    }, 2200);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [toast.open]);
+
+  const showToast = (message: string, variant: 'success' | 'error' = 'success') => {
+    setToast({
+      open: true,
+      message,
+      variant,
+    });
+  };
+
+  const closeToast = () => {
+    setToast((prev) => ({
+      ...prev,
+      open: false,
+    }));
+  };
+
+  const handleCopyShareLink = async () => {
+    try {
+      await navigator.clipboard.writeText(
+        `${window.location.origin}/meetings/${meeting.id}`
+      );
+      showToast('공유 링크가 복사되었습니다.', 'success');
+    } catch (error) {
+      console.error('공유 링크 복사 실패:', error);
+      showToast('공유 링크 복사에 실패했습니다.', 'error');
+    }
+  };
 
   const formatAudioTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -480,551 +535,555 @@ export default function MeetingDetailPage() {
     ]);
   };
 
-  const handleCopyShareLink = async () => {
-    try {
-      await navigator.clipboard.writeText(
-        `${window.location.origin}/meetings/${meeting.id}`
-      );
-    } catch (error) {
-      console.error('공유 링크 복사 실패:', error);
-    }
-  };
-
   return (
-    <PageWrapper>
-      <BackLink to = "/meetings">
-        <ArrowLeft className = "back-icon" />
-        회의 목록으로
-      </BackLink>
+    <>
+      <PageWrapper>
+        <BackLink to = "/meetings">
+          <ArrowLeft className = "back-icon" />
+          회의 목록으로
+        </BackLink>
 
-      <HeaderSection>
-        <HeaderTop>
-          <HeaderLeft>
-            <HeaderTitleRow>
-              {!isHeaderEditing ? (
-                <PageTitle>{meeting.title}</PageTitle>
-              ) : (
-                <HeaderInlineTitleInput
-                  value = {draftMeeting.title}
-                  onChange = {(e) =>
-                    handleDraftFieldChange('title', e.target.value)
-                  }
-                />
-              )}
-
-              <StatusBadge>완료</StatusBadge>
-            </HeaderTitleRow>
-
-            <HeaderMetaRow>
-              <HeaderMetaItem>
-                <Clock className = "meta-icon" />
+        <HeaderSection>
+          <HeaderTop>
+            <HeaderLeft>
+              <HeaderTitleRow>
                 {!isHeaderEditing ? (
-                  <>
-                    {formatMeetingDate(meeting.date)} {meeting.time}
-                  </>
+                  <PageTitle>{meeting.title}</PageTitle>
                 ) : (
-                  <HeaderEditActionRow>
-                    <HeaderInlineDateInput
-                      type = "date"
-                      value = {draftMeeting.date}
-                      onChange = {(e) =>
-                        handleDraftFieldChange('date', e.target.value)
-                      }
-                    />
-                    <HeaderInlineTimeInput
-                      type = "time"
-                      value = {draftMeeting.time}
-                      onChange = {(e) =>
-                        handleDraftFieldChange('time', e.target.value)
-                      }
-                    />
-                  </HeaderEditActionRow>
-                )}
-              </HeaderMetaItem>
-
-              <span>•</span>
-              <span>{meeting.duration}</span>
-              <span>•</span>
-
-              <HeaderMetaItem>
-                <Users className = "meta-icon" />
-                {participantCount}명 참여
-              </HeaderMetaItem>
-            </HeaderMetaRow>
-
-            {!isHeaderEditing ? (
-              <HeaderTagsRow>
-                {meeting.tags.map((tag) => (
-                  <TagBadge key = {tag}>
-                    <Tag className = "tag-icon" />
-                    {tag}
-                  </TagBadge>
-                ))}
-              </HeaderTagsRow>
-            ) : (
-              <HeaderTagEditRow>
-                {draftMeeting.tags.map((tag) => (
-                  <HeaderEditableTag key = {tag}>
-                    <Tag className = "tag-icon" />
-                    <span>{tag}</span>
-                    <HeaderTagDeleteButton
-                      type = "button"
-                      onClick = {() => handleRemoveTag(tag)}
-                    >
-                      <X className = "remove-icon" />
-                    </HeaderTagDeleteButton>
-                  </HeaderEditableTag>
-                ))}
-
-                <HeaderTagAddForm>
-                  <HeaderTagAddInput
-                    value = {newTag}
-                    placeholder = "태그 추가"
-                    onChange = {(e) => setNewTag(e.target.value)}
-                    onKeyDown = {(e) => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault();
-                        handleAddTag();
-                      }
-                    }}
+                  <HeaderInlineTitleInput
+                    value = {draftMeeting.title}
+                    onChange = {(e) =>
+                      handleDraftFieldChange('title', e.target.value)
+                    }
                   />
-                  <OutlineButton type = "button" onClick = {handleAddTag}>
-                    <Plus className = "button-icon" />
-                    추가
-                  </OutlineButton>
-                </HeaderTagAddForm>
-              </HeaderTagEditRow>
-            )}
-          </HeaderLeft>
+                )}
 
-          <HeaderActions>
-            {!isHeaderEditing ? (
-              <>
-                <OutlineButton
-                  type = "button"
-                  onClick = {() => setIsShareModalOpen(true)}
-                >
-                  <Share2 className = "button-icon" />
-                  공유
-                </OutlineButton>
+                <StatusBadge>완료</StatusBadge>
+              </HeaderTitleRow>
 
-                <OutlineButton type = "button" onClick = {handleStartHeaderEdit}>
-                  <Edit className = "button-icon" />
-                  수정
-                </OutlineButton>
-
-                <DropdownWrapper>
-                  <IconButton
-                    type = "button"
-                    onClick = {() => setIsMoreMenuOpen((prev) => !prev)}
-                  >
-                    <MoreVertical className = "button-icon" />
-                  </IconButton>
-
-                  {isMoreMenuOpen && (
-                    <DropdownMenu>
-                      <DropdownMenuItem type = "button">다운로드</DropdownMenuItem>
-                      <DropdownMenuItem type = "button" $danger = {true}>
-                        삭제
-                      </DropdownMenuItem>
-                    </DropdownMenu>
-                  )}
-                </DropdownWrapper>
-              </>
-            ) : (
-              <>
-                <ModalSecondaryButton
-                  type = "button"
-                  onClick = {handleCancelHeaderEdit}
-                >
-                  취소
-                </ModalSecondaryButton>
-                <ModalPrimaryButton
-                  type = "button"
-                  onClick = {handleSaveHeaderEdit}
-                >
-                  저장
-                </ModalPrimaryButton>
-              </>
-            )}
-          </HeaderActions>
-        </HeaderTop>
-      </HeaderSection>
-
-      <ContentGrid>
-        <LeftColumn>
-          <Card>
-            <CardHeaderRow>
-              <CardTitle>음성 플레이어</CardTitle>
-            </CardHeaderRow>
-
-            <AudioPlayerBody>
-              <AudioPlayerRow>
-                <AudioControlButton
-                  type = "button"
-                  onClick = {() => setIsPlaying(!isPlaying)}
-                >
-                  {isPlaying ? (
-                    <Pause className = "play-icon" />
+              <HeaderMetaRow>
+                <HeaderMetaItem>
+                  <Clock className = "meta-icon" />
+                  {!isHeaderEditing ? (
+                    <>
+                      {formatMeetingDate(meeting.date)} {meeting.time}
+                    </>
                   ) : (
-                    <Play className = "play-icon play-offset" />
+                    <HeaderEditActionRow>
+                      <HeaderInlineDateInput
+                        type = "date"
+                        value = {draftMeeting.date}
+                        onChange = {(e) =>
+                          handleDraftFieldChange('date', e.target.value)
+                        }
+                      />
+                      <HeaderInlineTimeInput
+                        type = "time"
+                        value = {draftMeeting.time}
+                        onChange = {(e) =>
+                          handleDraftFieldChange('time', e.target.value)
+                        }
+                      />
+                    </HeaderEditActionRow>
                   )}
-                </AudioControlButton>
+                </HeaderMetaItem>
 
-                <AudioProgressArea>
-                  <AudioTimeRow>
-                    <span>{formatAudioTime(currentTime)}</span>
-                    <span>{formatAudioTime(meeting.totalSeconds)}</span>
-                  </AudioTimeRow>
+                <span>•</span>
+                <span>{meeting.duration}</span>
+                <span>•</span>
 
-                  <ProgressTrack>
-                    <ProgressFill
-                      style = {{
-                        width: `${(currentTime / meeting.totalSeconds) * 100}%`,
+                <HeaderMetaItem>
+                  <Users className = "meta-icon" />
+                  {participantCount}명 참여
+                </HeaderMetaItem>
+              </HeaderMetaRow>
+
+              {!isHeaderEditing ? (
+                <HeaderTagsRow>
+                  {meeting.tags.map((tag) => (
+                    <TagBadge key = {tag}>
+                      <Tag className = "tag-icon" />
+                      {tag}
+                    </TagBadge>
+                  ))}
+                </HeaderTagsRow>
+              ) : (
+                <HeaderTagEditRow>
+                  {draftMeeting.tags.map((tag) => (
+                    <HeaderEditableTag key = {tag}>
+                      <Tag className = "tag-icon" />
+                      <span>{tag}</span>
+                      <HeaderTagDeleteButton
+                        type = "button"
+                        onClick = {() => handleRemoveTag(tag)}
+                      >
+                        <X className = "remove-icon" />
+                      </HeaderTagDeleteButton>
+                    </HeaderEditableTag>
+                  ))}
+
+                  <HeaderTagAddForm>
+                    <HeaderTagAddInput
+                      value = {newTag}
+                      placeholder = "태그 추가"
+                      onChange = {(e) => setNewTag(e.target.value)}
+                      onKeyDown = {(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          handleAddTag();
+                        }
                       }}
                     />
-                  </ProgressTrack>
-                </AudioProgressArea>
-              </AudioPlayerRow>
-            </AudioPlayerBody>
-          </Card>
+                    <OutlineButton type = "button" onClick = {handleAddTag}>
+                      <Plus className = "button-icon" />
+                      추가
+                    </OutlineButton>
+                  </HeaderTagAddForm>
+                </HeaderTagEditRow>
+              )}
+            </HeaderLeft>
 
-          <Card>
-            <CardHeaderRow>
-              <CardTitle>대화 내용</CardTitle>
+            <HeaderActions>
+              {!isHeaderEditing ? (
+                <>
+                  <OutlineButton
+                    type = "button"
+                    onClick = {() => setIsShareModalOpen(true)}
+                  >
+                    <Share2 className = "button-icon" />
+                    공유
+                  </OutlineButton>
 
-              <EmptyButton
-                type = "button"
-                onClick = {() => setIsEditingTranscript(!isEditingTranscript)}
-              >
-                <Edit className = "button-icon" />
-                {isEditingTranscript ? '완료' : '수정'}
-              </EmptyButton>
-            </CardHeaderRow>
+                  <OutlineButton type = "button" onClick = {handleStartHeaderEdit}>
+                    <Edit className = "button-icon" />
+                    수정
+                  </OutlineButton>
 
-            <TranscriptList>
-              {transcriptItems.map((item) =>
-                !isEditingTranscript ? (
-                  <TranscriptItem key = {item.id} $highlight = {item.highlight}>
-                    <TranscriptSpeakerRow>
-                      <SpeakerAvatar>
-                        {item.speaker.trim() ? item.speaker.trim()[0] : '?'}
-                      </SpeakerAvatar>
-                      <SpeakerName>{item.speaker || '이름 없음'}</SpeakerName>
-                      <SpeakerTime>{item.time}</SpeakerTime>
+                  <DropdownWrapper>
+                    <IconButton
+                      type = "button"
+                      onClick = {() => setIsMoreMenuOpen((prev) => !prev)}
+                    >
+                      <MoreVertical className = "button-icon" />
+                    </IconButton>
 
-                      {item.highlight && (
-                        <HighlightBadge>
-                          <Sparkles className = "highlight-icon" />
+                    {isMoreMenuOpen && (
+                      <DropdownMenu>
+                        <DropdownMenuItem type = "button">다운로드</DropdownMenuItem>
+                        <DropdownMenuItem type = "button" $danger = {true}>
+                          삭제
+                        </DropdownMenuItem>
+                      </DropdownMenu>
+                    )}
+                  </DropdownWrapper>
+                </>
+              ) : (
+                <>
+                  <ModalSecondaryButton
+                    type = "button"
+                    onClick = {handleCancelHeaderEdit}
+                  >
+                    취소
+                  </ModalSecondaryButton>
+                  <ModalPrimaryButton
+                    type = "button"
+                    onClick = {handleSaveHeaderEdit}
+                  >
+                    저장
+                  </ModalPrimaryButton>
+                </>
+              )}
+            </HeaderActions>
+          </HeaderTop>
+        </HeaderSection>
+
+        <ContentGrid>
+          <LeftColumn>
+            <Card>
+              <CardHeaderRow>
+                <CardTitle>음성 플레이어</CardTitle>
+              </CardHeaderRow>
+
+              <AudioPlayerBody>
+                <AudioPlayerRow>
+                  <AudioControlButton
+                    type = "button"
+                    onClick = {() => setIsPlaying(!isPlaying)}
+                  >
+                    {isPlaying ? (
+                      <Pause className = "play-icon" />
+                    ) : (
+                      <Play className = "play-icon play-offset" />
+                    )}
+                  </AudioControlButton>
+
+                  <AudioProgressArea>
+                    <AudioTimeRow>
+                      <span>{formatAudioTime(currentTime)}</span>
+                      <span>{formatAudioTime(meeting.totalSeconds)}</span>
+                    </AudioTimeRow>
+
+                    <ProgressTrack>
+                      <ProgressFill
+                        style = {{
+                          width: `${(currentTime / meeting.totalSeconds) * 100}%`,
+                        }}
+                      />
+                    </ProgressTrack>
+                  </AudioProgressArea>
+                </AudioPlayerRow>
+              </AudioPlayerBody>
+            </Card>
+
+            <Card>
+              <CardHeaderRow>
+                <CardTitle>대화 내용</CardTitle>
+
+                <EmptyButton
+                  type = "button"
+                  onClick = {() => setIsEditingTranscript(!isEditingTranscript)}
+                >
+                  <Edit className = "button-icon" />
+                  {isEditingTranscript ? '완료' : '수정'}
+                </EmptyButton>
+              </CardHeaderRow>
+
+              <TranscriptList>
+                {transcriptItems.map((item) =>
+                  !isEditingTranscript ? (
+                    <TranscriptItem key = {item.id} $highlight = {item.highlight}>
+                      <TranscriptSpeakerRow>
+                        <SpeakerAvatar>
+                          {item.speaker.trim() ? item.speaker.trim()[0] : '?'}
+                        </SpeakerAvatar>
+                        <SpeakerName>{item.speaker || '이름 없음'}</SpeakerName>
+                        <SpeakerTime>{item.time}</SpeakerTime>
+
+                        {item.highlight && (
+                          <HighlightBadge>
+                            <Sparkles className = "highlight-icon" />
+                            핵심 발언
+                          </HighlightBadge>
+                        )}
+                      </TranscriptSpeakerRow>
+
+                      <TranscriptText>{item.text}</TranscriptText>
+                    </TranscriptItem>
+                  ) : (
+                    <TranscriptEditItem key = {item.id}>
+                      <TranscriptEditTopRow>
+                        <TranscriptEditInput
+                          value = {item.speaker}
+                          placeholder = "화자 이름"
+                          onChange = {(e) =>
+                            handleTranscriptChange(item.id, 'speaker', e.target.value)
+                          }
+                        />
+
+                        <TranscriptEditTimeInput
+                          value = {item.time}
+                          placeholder = "00:00:00"
+                          onChange = {(e) =>
+                            handleTranscriptChange(item.id, 'time', e.target.value)
+                          }
+                        />
+
+                        <TranscriptHighlightToggle
+                          type = "button"
+                          $active = {item.highlight}
+                          onClick = {() =>
+                            handleTranscriptChange(
+                              item.id,
+                              'highlight',
+                              !item.highlight
+                            )
+                          }
+                        >
+                          <Sparkles className = "toggle-icon" />
                           핵심 발언
-                        </HighlightBadge>
-                      )}
-                    </TranscriptSpeakerRow>
+                        </TranscriptHighlightToggle>
 
-                    <TranscriptText>{item.text}</TranscriptText>
-                  </TranscriptItem>
-                ) : (
-                  <TranscriptEditItem key = {item.id}>
-                    <TranscriptEditTopRow>
-                      <TranscriptEditInput
-                        value = {item.speaker}
-                        placeholder = "화자 이름"
+                        <IconButton
+                          type = "button"
+                          onClick = {() => handleDeleteTranscriptItem(item.id)}
+                        >
+                          <Trash2 className = "button-icon" />
+                        </IconButton>
+                      </TranscriptEditTopRow>
+
+                      <TranscriptEditTextarea
+                        value = {item.text}
+                        placeholder = "대화 내용을 입력하세요"
                         onChange = {(e) =>
-                          handleTranscriptChange(item.id, 'speaker', e.target.value)
+                          handleTranscriptChange(item.id, 'text', e.target.value)
                         }
                       />
+                    </TranscriptEditItem>
+                  )
+                )}
 
-                      <TranscriptEditTimeInput
-                        value = {item.time}
-                        placeholder = "00:00:00"
-                        onChange = {(e) =>
-                          handleTranscriptChange(item.id, 'time', e.target.value)
-                        }
-                      />
+                {isEditingTranscript && (
+                  <TranscriptAddButton type = "button" onClick = {handleAddTranscriptItem}>
+                    <Plus className = "button-icon" />
+                    화자 대화 추가
+                  </TranscriptAddButton>
+                )}
+              </TranscriptList>
+            </Card>
 
-                      <TranscriptHighlightToggle
-                        type = "button"
-                        $active = {item.highlight}
-                        onClick = {() =>
-                          handleTranscriptChange(
-                            item.id,
-                            'highlight',
-                            !item.highlight
-                          )
-                        }
-                      >
-                        <Sparkles className = "toggle-icon" />
-                        핵심 발언
-                      </TranscriptHighlightToggle>
+            <Card>
+              <CardHeaderRow>
+                <CardTitle>회의 분석</CardTitle>
+              </CardHeaderRow>
 
-                      <IconButton
-                        type = "button"
-                        onClick = {() => handleDeleteTranscriptItem(item.id)}
-                      >
-                        <Trash2 className = "button-icon" />
-                      </IconButton>
-                    </TranscriptEditTopRow>
+              <TabsWrapper>
+                <TabsHeader>
+                  <TabButton
+                    type = "button"
+                    $active = {activeTab === 'participation'}
+                    onClick = {() => setActiveTab('participation')}
+                  >
+                    참여도 분석
+                  </TabButton>
 
-                    <TranscriptEditTextarea
-                      value = {item.text}
-                      placeholder = "대화 내용을 입력하세요"
-                      onChange = {(e) =>
-                        handleTranscriptChange(item.id, 'text', e.target.value)
-                      }
-                    />
-                  </TranscriptEditItem>
-                )
-              )}
+                  <TabButton
+                    type = "button"
+                    $active = {activeTab === 'engagement'}
+                    onClick = {() => setActiveTab('engagement')}
+                  >
+                    시간별 몰입도
+                  </TabButton>
+                </TabsHeader>
 
-              {isEditingTranscript && (
-                <TranscriptAddButton type = "button" onClick = {handleAddTranscriptItem}>
-                  <Plus className = "button-icon" />
-                  화자 대화 추가
-                </TranscriptAddButton>
-              )}
-            </TranscriptList>
-          </Card>
+                {activeTab === 'participation' && (
+                  <ChartSection>
+                    <ParticipationLayout>
+                      <div style = {{ width: '16rem', height: '16rem' }}>
+                        <ResponsiveContainer width = "100%" height = "100%">
+                          <PieChart>
+                            <Pie
+                              data = {participationData}
+                              cx = "50%"
+                              cy = "50%"
+                              labelLine = {false}
+                              outerRadius = {80}
+                              fill = "#8884d8"
+                              dataKey = "value"
+                            >
+                              {participationData.map((entry, index) => (
+                                <Cell key = {`cell-${index}`} fill = {entry.color} />
+                              ))}
+                            </Pie>
+                          </PieChart>
+                        </ResponsiveContainer>
+                      </div>
 
-          <Card>
-            <CardHeaderRow>
-              <CardTitle>회의 분석</CardTitle>
-            </CardHeaderRow>
+                      <ParticipationLegend>
+                        {participationData.map((participant, index) => (
+                          <ParticipationLegendItem key = {index}>
+                            <ParticipationLegendLeft>
+                              <ColorDot style = {{ backgroundColor: participant.color }} />
+                              <LegendName>{participant.name}</LegendName>
+                            </ParticipationLegendLeft>
 
-            <TabsWrapper>
-              <TabsHeader>
-                <TabButton
-                  type = "button"
-                  $active = {activeTab === 'participation'}
-                  onClick = {() => setActiveTab('participation')}
-                >
-                  참여도 분석
-                </TabButton>
+                            <LegendValue>{participant.value}%</LegendValue>
+                          </ParticipationLegendItem>
+                        ))}
+                      </ParticipationLegend>
+                    </ParticipationLayout>
+                  </ChartSection>
+                )}
 
-                <TabButton
-                  type = "button"
-                  $active = {activeTab === 'engagement'}
-                  onClick = {() => setActiveTab('engagement')}
-                >
-                  시간별 몰입도
-                </TabButton>
-              </TabsHeader>
-
-              {activeTab === 'participation' && (
-                <ChartSection>
-                  <ParticipationLayout>
-                    <div style = {{ width: '16rem', height: '16rem' }}>
+                {activeTab === 'engagement' && (
+                  <ChartSection>
+                    <div style = {{ width: '100%', height: '12.5rem' }}>
                       <ResponsiveContainer width = "100%" height = "100%">
-                        <PieChart>
-                          <Pie
-                            data = {participationData}
-                            cx = "50%"
-                            cy = "50%"
-                            labelLine = {false}
-                            outerRadius = {80}
-                            fill = "#8884d8"
-                            dataKey = "value"
-                          >
-                            {participationData.map((entry, index) => (
-                              <Cell key = {`cell-${index}`} fill = {entry.color} />
-                            ))}
-                          </Pie>
-                        </PieChart>
+                        <BarChart data = {engagementData}>
+                          <XAxis dataKey = "time" />
+                          <YAxis />
+                          <Tooltip />
+                          <Bar
+                            dataKey = "score"
+                            fill = "#2563EB"
+                            radius = {[8, 8, 0, 0]}
+                          />
+                        </BarChart>
                       </ResponsiveContainer>
                     </div>
 
-                    <ParticipationLegend>
-                      {participationData.map((participant, index) => (
-                        <ParticipationLegendItem key = {index}>
-                          <ParticipationLegendLeft>
-                            <ColorDot style = {{ backgroundColor: participant.color }} />
-                            <LegendName>{participant.name}</LegendName>
-                          </ParticipationLegendLeft>
+                    <InsightText>
+                      전체적으로 높은 몰입도를 유지했습니다. 30-45분 구간에서 약간
+                      감소했지만, 이후 회복되었습니다.
+                    </InsightText>
+                  </ChartSection>
+                )}
+              </TabsWrapper>
+            </Card>
+          </LeftColumn>
 
-                          <LegendValue>{participant.value}%</LegendValue>
-                        </ParticipationLegendItem>
-                      ))}
-                    </ParticipationLegend>
-                  </ParticipationLayout>
-                </ChartSection>
-              )}
+          <RightColumn>
+            <Card>
+              <CardHeaderRow>
+                <CardTitle>
+                  <FileText className = "title-icon blue" />
+                  회의 요약
+                </CardTitle>
+              </CardHeaderRow>
 
-              {activeTab === 'engagement' && (
-                <ChartSection>
-                  <div style = {{ width: '100%', height: '12.5rem' }}>
-                    <ResponsiveContainer width = "100%" height = "100%">
-                      <BarChart data = {engagementData}>
-                        <XAxis dataKey = "time" />
-                        <YAxis />
-                        <Tooltip />
-                        <Bar
-                          dataKey = "score"
-                          fill = "#2563EB"
-                          radius = {[8, 8, 0, 0]}
-                        />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </div>
+              <SummaryText>{summary.main}</SummaryText>
 
-                  <InsightText>
-                    전체적으로 높은 몰입도를 유지했습니다. 30-45분 구간에서 약간
-                    감소했지만, 이후 회복되었습니다.
-                  </InsightText>
-                </ChartSection>
-              )}
-            </TabsWrapper>
-          </Card>
-        </LeftColumn>
+              <Separator />
 
-        <RightColumn>
-          <Card>
-            <CardHeaderRow>
-              <CardTitle>
-                <FileText className = "title-icon blue" />
-                회의 요약
-              </CardTitle>
-            </CardHeaderRow>
+              <SectionSubTitle>핵심 내용</SectionSubTitle>
 
-            <SummaryText>{summary.main}</SummaryText>
+              <BulletList>
+                {summary.keyPoints.map((point, index) => (
+                  <BulletItem key = {index}>{point}</BulletItem>
+                ))}
+              </BulletList>
+            </Card>
 
-            <Separator />
+            <ScoreCard>
+              <ScoreHeader>
+                <CardTitle>
+                  <TrendingUp className = "title-icon blue" />
+                  효율성 점수
+                </CardTitle>
 
-            <SectionSubTitle>핵심 내용</SectionSubTitle>
+                <ScoreValue>{summary.score}</ScoreValue>
+              </ScoreHeader>
 
-            <BulletList>
-              {summary.keyPoints.map((point, index) => (
-                <BulletItem key = {index}>{point}</BulletItem>
-              ))}
-            </BulletList>
-          </Card>
+              <ProgressTrack>
+                <ProgressFill style = {{ width: `${summary.score}%` }} />
+              </ProgressTrack>
 
-          <ScoreCard>
-            <ScoreHeader>
-              <CardTitle>
-                <TrendingUp className = "title-icon blue" />
-                효율성 점수
-              </CardTitle>
+              <InsightText>{summary.insights}</InsightText>
+            </ScoreCard>
 
-              <ScoreValue>{summary.score}</ScoreValue>
-            </ScoreHeader>
+            <Card>
+              <CardHeaderRow>
+                <CardTitle>
+                  <CheckSquare className = "title-icon green" />
+                  실행 항목
+                </CardTitle>
+              </CardHeaderRow>
 
-            <ProgressTrack>
-              <ProgressFill style = {{ width: `${summary.score}%` }} />
-            </ProgressTrack>
+              <TodoList>
+                {todoItems.map((todo) => (
+                  <TodoItem key = {todo.id}>
+                    <TodoCheckbox
+                      checked = {todo.completed}
+                      onChange = {() => toggleTodo(todo.id)}
+                    />
 
-            <InsightText>{summary.insights}</InsightText>
-          </ScoreCard>
+                    <TodoContent>
+                      <TodoText $completed = {todo.completed}>
+                        {todo.text}
+                      </TodoText>
 
-          <Card>
-            <CardHeaderRow>
-              <CardTitle>
-                <CheckSquare className = "title-icon green" />
-                실행 항목
-              </CardTitle>
-            </CardHeaderRow>
+                      <TodoMetaRow>
+                        <TodoMetaText>{todo.assignee}</TodoMetaText>
+                        <TodoMetaText>•</TodoMetaText>
+                        <TodoMetaText>{formatDueDate(todo.dueDate)}</TodoMetaText>
 
-            <TodoList>
-              {todoItems.map((todo) => (
-                <TodoItem key = {todo.id}>
-                  <TodoCheckbox
-                    checked = {todo.completed}
-                    onChange = {() => toggleTodo(todo.id)}
+                        {todo.priority === 'high' && (
+                          <PriorityBadge>긴급</PriorityBadge>
+                        )}
+                      </TodoMetaRow>
+                    </TodoContent>
+                  </TodoItem>
+                ))}
+              </TodoList>
+            </Card>
+
+            <Card>
+              <CardHeaderRow>
+                <CardTitle>
+                  <CalendarIcon className = "title-icon blue" />
+                  생성된 일정
+                </CardTitle>
+              </CardHeaderRow>
+
+              <ScheduleList>
+                {schedules.map((schedule) => (
+                  <ScheduleItem key = {schedule.id}>
+                    <p className = "schedule-title">{schedule.title}</p>
+                    <p className = "schedule-date">
+                      {formatScheduleDate(schedule.date)} {schedule.time}
+                    </p>
+                    <p className = "schedule-attendees">
+                      참석: {schedule.attendees}
+                    </p>
+                  </ScheduleItem>
+                ))}
+              </ScheduleList>
+            </Card>
+          </RightColumn>
+        </ContentGrid>
+
+        {isShareModalOpen && (
+          <ModalOverlay onClick = {() => setIsShareModalOpen(false)}>
+            <ModalCard onClick = {(e) => e.stopPropagation()}>
+              <ModalHeader>
+                <div>
+                  <ModalTitle>회의 공유</ModalTitle>
+                  <ModalDescription>
+                    {meeting.title} 회의를 공유할 수 있습니다.
+                  </ModalDescription>
+                </div>
+
+                <ModalCloseButton
+                  type = "button"
+                  onClick = {() => setIsShareModalOpen(false)}
+                >
+                  <X className = "close-icon" />
+                </ModalCloseButton>
+              </ModalHeader>
+
+              <ModalBody>
+                <ModalField>
+                  <ModalLabel>공유 링크</ModalLabel>
+                  <ModalInput
+                    value = {`${window.location.origin}/meetings/${meeting.id}`}
+                    readOnly
                   />
+                  <ModalHelperText>
+                    링크를 복사해 팀원과 공유할 수 있습니다.
+                  </ModalHelperText>
+                </ModalField>
+              </ModalBody>
 
-                  <TodoContent>
-                    <TodoText $completed = {todo.completed}>
-                      {todo.text}
-                    </TodoText>
+              <ModalFooter>
+                <ModalSecondaryButton
+                  type = "button"
+                  onClick = {() => setIsShareModalOpen(false)}
+                >
+                  닫기
+                </ModalSecondaryButton>
 
-                    <TodoMetaRow>
-                      <TodoMetaText>{todo.assignee}</TodoMetaText>
-                      <TodoMetaText>•</TodoMetaText>
-                      <TodoMetaText>{formatDueDate(todo.dueDate)}</TodoMetaText>
+                <ModalPrimaryButton
+                  type = "button"
+                  onClick = {handleCopyShareLink}
+                >
+                  공유 링크 복사
+                </ModalPrimaryButton>
+              </ModalFooter>
+            </ModalCard>
+          </ModalOverlay>
+        )}
+      </PageWrapper>
 
-                      {todo.priority === 'high' && (
-                        <PriorityBadge>긴급</PriorityBadge>
-                      )}
-                    </TodoMetaRow>
-                  </TodoContent>
-                </TodoItem>
-              ))}
-            </TodoList>
-          </Card>
+      {toast.open && (
+        <ToastContainer>
+          <ToastBox $variant = {toast.variant}>
+            <span>{toast.message}</span>
 
-          <Card>
-            <CardHeaderRow>
-              <CardTitle>
-                <CalendarIcon className = "title-icon blue" />
-                생성된 일정
-              </CardTitle>
-            </CardHeaderRow>
-
-            <ScheduleList>
-              {schedules.map((schedule) => (
-                <ScheduleItem key = {schedule.id}>
-                  <p className = "schedule-title">{schedule.title}</p>
-                  <p className = "schedule-date">
-                    {formatScheduleDate(schedule.date)} {schedule.time}
-                  </p>
-                  <p className = "schedule-attendees">
-                    참석: {schedule.attendees}
-                  </p>
-                </ScheduleItem>
-              ))}
-            </ScheduleList>
-          </Card>
-        </RightColumn>
-      </ContentGrid>
-
-      {isShareModalOpen && (
-        <ModalOverlay onClick = {() => setIsShareModalOpen(false)}>
-          <ModalCard onClick = {(e) => e.stopPropagation()}>
-            <ModalHeader>
-              <div>
-                <ModalTitle>회의 공유</ModalTitle>
-                <ModalDescription>
-                  {meeting.title} 회의를 공유할 수 있습니다.
-                </ModalDescription>
-              </div>
-
-              <ModalCloseButton
-                type = "button"
-                onClick = {() => setIsShareModalOpen(false)}
-              >
-                <X className = "close-icon" />
-              </ModalCloseButton>
-            </ModalHeader>
-
-            <ModalBody>
-              <ModalField>
-                <ModalLabel>공유 링크</ModalLabel>
-                <ModalInput
-                  value = {`${window.location.origin}/meetings/${meeting.id}`}
-                  readOnly
-                />
-                <ModalHelperText>
-                  링크를 복사해 팀원과 공유할 수 있습니다.
-                </ModalHelperText>
-              </ModalField>
-            </ModalBody>
-
-            <ModalFooter>
-              <ModalSecondaryButton
-                type = "button"
-                onClick = {() => setIsShareModalOpen(false)}
-              >
-                닫기
-              </ModalSecondaryButton>
-
-              <ModalPrimaryButton 
-                type = "button" 
-                onClick = {handleCopyShareLink}
-              >
-                공유 링크 복사
-              </ModalPrimaryButton>
-            </ModalFooter>
-          </ModalCard>
-        </ModalOverlay>
+            <ToastCloseButton type = "button" onClick = {closeToast}>
+              <X className = "toast-close-icon" />
+            </ToastCloseButton>
+          </ToastBox>
+        </ToastContainer>
       )}
-    </PageWrapper>
+    </>
   );
 }
