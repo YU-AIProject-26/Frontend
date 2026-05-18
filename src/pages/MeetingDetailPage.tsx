@@ -586,7 +586,7 @@ export default function MeetingDetailPage() {
         '[인사이트]',
         summary.insights,
         '',
-        '[실행 항목]',
+        '[추출된 할 일]',
         todoText,
         '',
         '[생성된 일정]',
@@ -1178,7 +1178,7 @@ export default function MeetingDetailPage() {
               <CardHeaderRow>
                 <CardTitle>
                   <CheckSquare className = "title-icon green" />
-                  실행 항목
+                  추출된 할 일
                 </CardTitle>
               </CardHeaderRow>
 
