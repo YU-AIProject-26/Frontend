@@ -422,11 +422,22 @@ export default function MeetingDetailPage() {
     }
   };
 
-  const formatAudioTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
+  const formatAudioDisplayTime = (seconds: number, shouldShowHour: boolean) => {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
     const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
+
+    if (shouldShowHour) {
+      return `${hours}:${minutes.toString().padStart(2, '0')}:${secs
+        .toString()
+        .padStart(2, '0')}`;
+    }
+
+    const totalMinutes = Math.floor(seconds / 60);
+    return `${totalMinutes}:${secs.toString().padStart(2, '0')}`;
   };
+
+  const shouldShowHourFormat = meeting.totalSeconds >= 3600;
 
   const formatDueDate = (date: string) => {
     return new Date(date).toLocaleDateString('ko-KR', {
@@ -847,8 +858,12 @@ export default function MeetingDetailPage() {
 
                   <AudioProgressArea>
                     <AudioTimeRow>
-                      <span>{formatAudioTime(currentTime)}</span>
-                      <span>{formatAudioTime(meeting.totalSeconds)}</span>
+                      <span>
+                        {formatAudioDisplayTime(currentTime, shouldShowHourFormat)}
+                      </span>
+                      <span>
+                        {formatAudioDisplayTime(meeting.totalSeconds, shouldShowHourFormat)}
+                      </span>
                     </AudioTimeRow>
 
                     <ProgressTrack>
