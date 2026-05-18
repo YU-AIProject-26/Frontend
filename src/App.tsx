@@ -20,6 +20,7 @@ import NotificationsPage from './pages/NotificationsPage';
 import MeetingsPage from './pages/MeetingsPage';
 import MeetingCreatePage from './pages/MeetingCreatePage';
 import MeetingDetailPage from './pages/MeetingDetailPage';
+import CalendarPage from './pages/CalendarPage';
 import TodoPage from './pages/TodoPage';
 import AdminPage from './pages/AdminPage';
 import AdminUsersPage from './pages/AdminUsersPage';
@@ -127,6 +128,7 @@ export default function App() {
           <Route path = "/meetings" element = {<MeetingsPage />} />
           <Route path = "/meetings/:id" element = {<MeetingDetailPage />} />
           <Route path = "/meetings/create" element = {<MeetingCreatePage />} />
+          <Route path = "/calendar" element = {<CalendarPage />} />
           <Route path = "/todo" element = {<TodoPage />} />
 
           <Route
