@@ -927,6 +927,107 @@ export const ShareOptionButton = styled.button`
   }
 `;
 
+export const EmptyStateCard = styled.div`
+  ${cardBase};
+  min-height: 22rem;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+`;
+
+export const EmptyStateIconWrap = styled.div`
+  width: 4rem;
+  height: 4rem;
+  border-radius: 9999px;
+  background: #f3f4f6;
+  color: #6b7280;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+
+  .empty-icon {
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+
+  html.dark & {
+    background: #0A0A0A;
+    color: #9ca3af;
+  }
+`;
+
+export const EmptyStateTitle = styled.h3`
+  margin: 0 0 0.5rem;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #111827;
+
+  html.dark & {
+    color: #ffffff;
+  }
+`;
+
+export const EmptyStateDescription = styled.p`
+  margin: 0 0 1.25rem;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: #6b7280;
+
+  html.dark & {
+    color: #9ca3af;
+  }
+`;
+
+export const EmptyStateActionButton = styled.button`
+  ${modalButtonBase};
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  color: #111827;
+
+  &:hover {
+    background: #f3f4f6;
+  }
+
+  html.dark & {
+    border-color: rgba(255, 255, 255, 0.08);
+    background: #0A0A0A;
+    color: #ffffff;
+
+    &:hover {
+      background: #141414;
+    }
+  }
+`;
+
+export const WarningMessage = styled.div`
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+  padding: 0.875rem 1rem;
+  border-radius: 0.875rem;
+  background: rgba(245, 158, 11, 0.1);
+  color: #b45309;
+  font-size: 0.875rem;
+  line-height: 1.5;
+
+  .warning-icon {
+    width: 1rem;
+    height: 1rem;
+    flex-shrink: 0;
+    margin-top: 0.125rem;
+  }
+
+  html.dark & {
+    background: rgba(245, 158, 11, 0.16);
+    color: #fbbf24;
+  }
+`;
+
 export const ToastContainer = styled.div`
   position: fixed;
   left: 50%;
