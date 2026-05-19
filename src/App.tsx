@@ -17,12 +17,21 @@ import NotFoundPage from './pages/NotFoundPage';
 import MyPage from './pages/MyPage';
 import SettingsPage from './pages/SettingsPage';
 import NotificationsPage from './pages/NotificationsPage';
+import MeetingsPage from './pages/MeetingsPage';
 import MeetingCreatePage from './pages/MeetingCreatePage';
+import MeetingDetailPage from './pages/MeetingDetailPage';
+import CalendarPage from './pages/CalendarPage';
 import TodoPage from './pages/TodoPage';
+import AdminPage from './pages/AdminPage';
+import AdminUsersPage from './pages/AdminUsersPage';
+import AdminMeetingsPage from './pages/AdminMeetingsPage';
+import AdminInquiriesPage from './pages/AdminInquiriesPage';
+import AdminNoticesPage from './pages/AdminNoticesPage';
 import { useAuth } from './contexts/useAuth';
 
 export default function App() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, hasCompletedOnboarding, user } = useAuth();
+  const isAdmin = user?.role === 'admin';
 
   return (
     <>
@@ -33,7 +42,13 @@ export default function App() {
           path = "/"
           element = {
             <Navigate
-              to = {isAuthenticated ? '/dashboard' : '/landing'}
+              to = {
+                !isAuthenticated
+                  ? '/landing'
+                  : hasCompletedOnboarding
+                  ? '/dashboard'
+                  : '/onboarding'
+              }
               replace
             />
           }
@@ -42,14 +57,24 @@ export default function App() {
         <Route
           path = "/landing"
           element = {
-            isAuthenticated ? <Navigate to = "/dashboard" replace /> : <LandingPage />
+            isAuthenticated && hasCompletedOnboarding ? (
+              <Navigate to = "/dashboard" replace />
+            ) : (
+              <LandingPage />
+            )
           }
         />
 
         <Route
           path = "/onboarding"
           element = {
-            isAuthenticated ? <Navigate to = "/dashboard" replace /> : <OnboardingPage />
+            !isAuthenticated ? (
+              <Navigate to = "/landing" replace />
+            ) : hasCompletedOnboarding ? (
+              <Navigate to = "/dashboard" replace />
+            ) : (
+              <OnboardingPage />
+            )
           }
         />
 
@@ -57,24 +82,26 @@ export default function App() {
           <Route
             path = "/auth/login"
             element = {
-              isAuthenticated ? <Navigate to = "/dashboard" replace /> : <LoginPage />
+              isAuthenticated && hasCompletedOnboarding ? (
+                <Navigate to = "/dashboard" replace />
+              ) : (
+                <LoginPage />
+              )
             }
           />
           <Route
             path = "/auth/signup"
             element = {
-              isAuthenticated ? <Navigate to = "/dashboard" replace /> : <SignupPage />
+              isAuthenticated && hasCompletedOnboarding ? (
+                <Navigate to = "/dashboard" replace />
+              ) : (
+                <SignupPage />
+              )
             }
           />
           <Route
             path = "/auth/reset-password"
-            element = {
-              isAuthenticated ? (
-                <Navigate to = "/dashboard" replace />
-              ) : (
-                <PasswordResetPage />
-              )
-            }
+            element = {<PasswordResetPage />}
           />
         </Route>
 
@@ -85,15 +112,55 @@ export default function App() {
 
         <Route
           element = {
-            isAuthenticated ? <DashboardLayout /> : <Navigate to = "/landing" replace />
+            !isAuthenticated ? (
+              <Navigate to = "/landing" replace />
+            ) : !hasCompletedOnboarding ? (
+              <Navigate to = "/onboarding" replace />
+            ) : (
+              <DashboardLayout />
+            )
           }
         >
           <Route path = "/dashboard" element = {<DashboardPage />} />
           <Route path = "/notifications" element = {<NotificationsPage />} />
           <Route path = "/my" element = {<MyPage />} />
           <Route path = "/settings" element = {<SettingsPage />} />
+          <Route path = "/meetings" element = {<MeetingsPage />} />
+          <Route path = "/meetings/:id" element = {<MeetingDetailPage />} />
           <Route path = "/meetings/create" element = {<MeetingCreatePage />} />
+          <Route path = "/calendar" element = {<CalendarPage />} />
           <Route path = "/todo" element = {<TodoPage />} />
+
+          <Route
+            path = "/admin"
+            element = {
+              isAdmin ? <AdminPage /> : <Navigate to = "/not-found" replace />
+            }
+          />
+          <Route
+            path = "/admin/users"
+            element = {
+              isAdmin ? <AdminUsersPage /> : <Navigate to = "/not-found" replace />
+            }
+          />
+          <Route
+            path = "/admin/meetings"
+            element = {
+              isAdmin ? <AdminMeetingsPage /> : <Navigate to = "/not-found" replace />
+            }
+          />
+          <Route
+            path = "/admin/inquiries"
+            element = {
+              isAdmin ? <AdminInquiriesPage /> : <Navigate to = "/not-found" replace />
+            }
+          />
+          <Route
+            path = "/admin/notices"
+            element = {
+              isAdmin ? <AdminNoticesPage /> : <Navigate to = "/not-found" replace />
+            }
+          />
         </Route>
 
         <Route path = "/not-found" element = {<NotFoundPage />} />

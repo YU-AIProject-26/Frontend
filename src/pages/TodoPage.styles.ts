@@ -74,30 +74,28 @@ export const HeaderDescription = styled.p`
 `;
 
 export const AddButton = styled.button`
-  height: 2.75rem;
-  padding: 0 1.5rem;
+  height: 44px;
+  padding: 0 24px;
   border: none;
-  border-radius: 0.75rem;
-  background: ${({ theme }) => theme.colors.accent};
-  color: #ffffff;
-  font-size: 0.9375rem;
-  font-weight: 500;
+  border-radius: 10px;
+  background: var(--color-accent, #2563eb);
+  color: var(--color-accent-foreground, #ffffff);
+  font-size: 14px;
+  font-weight: 600;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 8px;
+  cursor: default;
 
   .button-icon {
-    width: 1.25rem;
-    height: 1.25rem;
-    margin-right: 0.5rem;
+    width: 20px;
+    height: 20px;
+    margin-right: 0;
   }
 
   &:hover {
-    background: color-mix(
-      in srgb,
-      ${({ theme }) => theme.colors.accent} 90%,
-      transparent
-    );
+    opacity: 0.92;
   }
 `;
 

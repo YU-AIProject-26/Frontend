@@ -1,11 +1,16 @@
 import { useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
-import { AUTH_STORAGE_KEY, TEMP_USER } from '../auth/tempAuth';
+import {
+  AUTH_STORAGE_KEY,
+  ONBOARDING_STORAGE_KEY,
+  TEMP_USERS,
+} from '../auth/tempAuth';
 import { AuthContext } from './AuthContextObject';
 
 type AuthUser = {
   email: string;
   name: string;
+  role: 'user' | 'admin';
 };
 
 type LoginPayload = {
@@ -31,13 +36,20 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   });
 
+  const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(() => {
+    return localStorage.getItem(ONBOARDING_STORAGE_KEY) === 'true';
+  });
+
   const login = ({ email, password }: LoginPayload) => {
     const normalizedEmail = email.trim().toLowerCase();
 
-    if (
-      normalizedEmail !== TEMP_USER.email.toLowerCase() ||
-      password !== TEMP_USER.password
-    ) {
+    const matchedUser = TEMP_USERS.find(
+      (tempUser) =>
+        tempUser.email.toLowerCase() === normalizedEmail &&
+        tempUser.password === password
+    );
+
+    if (!matchedUser) {
       return {
         success: false,
         message: '이메일 또는 비밀번호가 올바르지 않습니다.',
@@ -45,8 +57,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
 
     const loggedInUser: AuthUser = {
-      email: TEMP_USER.email,
-      name: TEMP_USER.name,
+      email: matchedUser.email,
+      name: matchedUser.name,
+      role: matchedUser.role,
     };
 
     setUser(loggedInUser);
@@ -63,14 +76,27 @@ export function AuthProvider({ children }: AuthProviderProps) {
     localStorage.removeItem(AUTH_STORAGE_KEY);
   };
 
+  const completeOnboarding = () => {
+    setHasCompletedOnboarding(true);
+    localStorage.setItem(ONBOARDING_STORAGE_KEY, 'true');
+  };
+
+  const resetOnboarding = () => {
+    setHasCompletedOnboarding(false);
+    localStorage.removeItem(ONBOARDING_STORAGE_KEY);
+  };
+
   const value = useMemo(
     () => ({
       isAuthenticated: !!user,
       user,
       login,
       logout,
+      hasCompletedOnboarding,
+      completeOnboarding,
+      resetOnboarding,
     }),
-    [user]
+    [user, hasCompletedOnboarding]
   );
 
   return <AuthContext.Provider value = {value}>{children}</AuthContext.Provider>;

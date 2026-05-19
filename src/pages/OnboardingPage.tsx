@@ -43,24 +43,34 @@ import {
   OutlineButton,
   PrimaryButton,
 } from './OnboardingPage.styles';
+import { useAuth } from '../contexts/useAuth';
 
 export default function OnboardingPage() {
   const [step, setStep] = useState(1);
   const navigate = useNavigate();
+  const { completeOnboarding } = useAuth();
 
   const totalSteps = 4;
   const progress = (step / totalSteps) * 100;
+
+  const handlePrev = () => {
+    if (step > 1) {
+      setStep(step - 1);
+    }
+  };
 
   const handleNext = () => {
     if (step < totalSteps) {
       setStep(step + 1);
     } else {
-      navigate('/');
+      completeOnboarding();
+      navigate('/dashboard');
     }
   };
 
   const handleSkip = () => {
-    navigate('/');
+    completeOnboarding();
+    navigate('/dashboard');
   };
 
   return (
@@ -208,6 +218,14 @@ export default function OnboardingPage() {
           <ButtonRow>
             <OutlineButton type = "button" onClick = {handleSkip}>
               건너뛰기
+            </OutlineButton>
+
+            <OutlineButton
+              type = "button"
+              onClick = {handlePrev}
+              disabled = {step === 1}
+            >
+              이전
             </OutlineButton>
 
             <PrimaryButton type = "button" onClick = {handleNext}>
