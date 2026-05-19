@@ -104,7 +104,7 @@ export const PrimaryActionButton = styled.button`
   align-items: center;
   justify-content: center;
   gap: 8px;
-  cursor: pointer;
+  cursor: default;
 
   .action-icon {
     width: 20px;
