@@ -78,15 +78,15 @@ export const AddButton = styled.button`
   padding: 0 24px;
   border: none;
   border-radius: 10px;
-  background: ${({ theme }) => theme.colors.accent};
-  color: #ffffff;
+  background: var(--color-accent, #2563eb);
+  color: var(--color-accent-foreground, #ffffff);
   font-size: 14px;
   font-weight: 600;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  cursor: pointer;
+  cursor: default;
 
   .button-icon {
     width: 20px;
@@ -95,11 +95,7 @@ export const AddButton = styled.button`
   }
 
   &:hover {
-    background: color-mix(
-      in srgb,
-      ${({ theme }) => theme.colors.accent} 90%,
-      transparent
-    );
+    opacity: 0.92;
   }
 `;
 
