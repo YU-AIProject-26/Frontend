@@ -108,7 +108,7 @@ export const SearchInput = styled.input`
 
   html.dark & {
     border-color: #262626;
-    background: #111827;
+    background: #0f0f0f;
     color: #ffffff;
   }
 `;
@@ -130,7 +130,7 @@ export const FilterSelect = styled.select`
 
   html.dark & {
     border-color: #262626;
-    background: #111827;
+    background: #0f0f0f;
     color: #ffffff;
   }
 `;
@@ -306,7 +306,7 @@ export const ModalCard = styled.div`
 
   html.dark & {
     border-color: #262626;
-    background: #111827;
+    background: #0f0f0f;
   }
 `;
 
@@ -425,11 +425,11 @@ export const ModalSecondaryButton = styled.button`
 
   html.dark & {
     border-color: #262626;
-    background: #111827;
+    background: #141414;
     color: #ffffff;
 
     &:hover {
-      background: #0a0a0a;
+      background: #1a1a1a;
     }
   }
 `;
@@ -450,7 +450,8 @@ export const InfoItem = styled.div`
   background: #f9fafb;
 
   html.dark & {
-    background: #0f0f0f;
+    border-color: #262626;
+    background: #141414;
   }
 `;
 
@@ -518,12 +519,12 @@ export const RoleOptionButton = styled.button<{ $selected?: boolean }>`
     border-color: ${({ $selected, theme }) =>
       $selected ? theme.colors.accent : '#262626'};
     background: ${({ $selected }) =>
-      $selected ? 'rgba(37, 99, 235, 0.12)' : '#111827'};
+      $selected ? 'rgba(37, 99, 235, 0.12)' : '#141414'};
     color: #ffffff;
 
     &:hover:not(:disabled) {
       border-color: ${({ theme }) => theme.colors.accent};
-      background: rgba(37, 99, 235, 0.12);
+      background: #1a1a1a;
     }
   }
 `;
@@ -634,7 +635,7 @@ export const OptionButton = styled.button<{ $selected?: boolean }>`
     border-color: ${({ $selected, theme }) =>
       $selected ? theme.colors.accent : '#262626'};
     background: ${({ $selected }) =>
-      $selected ? 'rgba(37, 99, 235, 0.12)' : '#111827'};
+      $selected ? 'rgba(37, 99, 235, 0.12)' : '#141414'};
     color: #ffffff;
 
     &:hover:not(:disabled) {
@@ -679,7 +680,7 @@ export const FormTextArea = styled.textarea`
 
   html.dark & {
     border-color: #262626;
-    background: #111827;
+    background: #141414;
     color: #ffffff;
   }
 `;
@@ -707,7 +708,7 @@ export const FormInput = styled.input`
 
   html.dark & {
     border-color: #262626;
-    background: #111827;
+    background: #141414;
     color: #ffffff;
   }
 `;
@@ -873,7 +874,7 @@ export const ToolbarButton = styled.button`
 
   html.dark & {
     border-color: #262626;
-    background: #111827;
+    background: #0f0f0f;
     color: #ffffff;
 
     &:hover {
@@ -948,8 +949,8 @@ export const WarningMessage = styled.div`
   }
 
   html.dark & {
-    background: rgba(245, 158, 11, 0.16);
-    color: #fbbf24;
+    background: rgba(127, 29, 29, 0.18);
+    color: rgba(239, 68, 68, 0.24);
   }
 `;
 
@@ -973,6 +974,7 @@ export const InfoMessage = styled.div`
   }
 
   html.dark & {
-    background: rgba(37, 99, 235, 0.14);
+    background: rgba(30, 64, 175, 0.14);
+    border-color: rgba(59, 130, 246, 0.2);
   }
 `;

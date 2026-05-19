@@ -114,7 +114,7 @@ export const StatSubText = styled.p<{ $accent?: boolean }>`
 
 export const ContentGrid = styled.div`
   display: grid;
-  grid-template-columns: minmax(0, 2fr) minmax(340px, 1fr);
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 1.5rem;
   align-items: stretch;
 
@@ -126,11 +126,21 @@ export const ContentGrid = styled.div`
 export const WideSection = styled.div`
   min-width: 0;
   display: flex;
+  grid-column: span 4;
+
+  @media (max-width: 1100px) {
+    grid-column: span 1;
+  }
 `;
 
 export const SideSection = styled.div`
   min-width: 0;
   display: flex;
+  grid-column: span 2;
+
+  @media (max-width: 1100px) {
+    grid-column: span 1;
+  }
 `;
 
 export const SectionCard = styled.section`
@@ -439,7 +449,7 @@ export const InquiryItem = styled.div`
 
   html.dark & {
     border-color: #262626;
-    background: #111827;
+    background: #0f0f0f;
   }
 `;
 
@@ -557,11 +567,11 @@ export const QuickActionCard = styled(Link)`
 
   html.dark & {
     border-color: #262626;
-    background: #111827;
+    background: #0f0f0f;
 
     &:hover {
       border-color: rgba(59, 130, 246, 0.35);
-      background: #0f172a;
+      background: #141414;
       box-shadow: 0 10px 24px rgba(59, 130, 246, 0.08);
     }
   }
