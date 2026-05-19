@@ -449,7 +449,7 @@ export const InquiryItem = styled.div`
 
   html.dark & {
     border-color: #262626;
-    background: #111827;
+    background: #0f0f0f;
   }
 `;
 
@@ -567,11 +567,11 @@ export const QuickActionCard = styled(Link)`
 
   html.dark & {
     border-color: #262626;
-    background: #111827;
+    background: #0f0f0f;
 
     &:hover {
       border-color: rgba(59, 130, 246, 0.35);
-      background: #0f172a;
+      background: #141414;
       box-shadow: 0 10px 24px rgba(59, 130, 246, 0.08);
     }
   }
