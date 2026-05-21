@@ -64,6 +64,17 @@ export const Label = styled.label`
   }
 `;
 
+export const InlineRow = styled.div`
+  display: flex;
+  align-items: stretch;
+  gap: 0.5rem;
+`;
+
+export const InlineInputWrap = styled.div`
+  flex: 1;
+  min-width: 0;
+`;
+
 export const TextInput = styled.input`
   width: 100%;
   height: 3rem;
@@ -90,6 +101,10 @@ export const TextInput = styled.input`
     box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
   }
 
+  &:disabled {
+    opacity: 0.65;
+  }
+
   html.dark & {
     background: #191919;
     color: #f9fafb;
@@ -102,6 +117,84 @@ export const TextInput = styled.input`
       border-color: #3b82f6;
       box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
     }
+  }
+`;
+
+export const InlineActionButton = styled.button`
+  width: 92px;
+  height: 3rem;
+  padding: 0 0.875rem;
+  border-radius: 0.75rem;
+  border: 1px solid #d1d5db;
+  background: #ffffff;
+  color: #374151;
+  font-size: 0.875rem;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    opacity 0.2s ease,
+    transform 0.2s ease;
+
+  &:hover:not(:disabled) {
+    background: #f9fafb;
+    border-color: #cbd5e1;
+    color: #111827;
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(1px);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  html.dark & {
+    border-color: #262626;
+    background: #0f0f0f;
+    color: #f9fafb;
+
+    &:hover:not(:disabled) {
+      background: #161616;
+      border-color: #333333;
+      color: #ffffff;
+    }
+  }
+`;
+
+export const HelperText = styled.p<{ $state?: 'default' | 'success' | 'error' }>`
+  margin: 0;
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  color: ${({ $state }) => {
+    if ($state === 'success') return '#16a34a';
+    if ($state === 'error') return '#dc2626';
+    return '#6b7280';
+  }};
+
+  html.dark & {
+    color: ${({ $state }) => {
+      if ($state === 'success') return '#4ade80';
+      if ($state === 'error') return '#f87171';
+      return '#9ca3af';
+    }};
+  }
+`;
+
+export const TimerText = styled.p`
+  margin: 0;
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  color: #2563eb;
+
+  html.dark & {
+    color: #60a5fa;
   }
 `;
 
