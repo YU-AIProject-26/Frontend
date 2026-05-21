@@ -267,7 +267,7 @@ export default function SignupPage() {
                   placeholder = "인증번호를 입력해주세요"
                   value = {verificationCode}
                   onChange = {(e) => setVerificationCode(e.target.value)}
-                  disabled = {!isVerificationSent && !isEmailVerified}
+                  disabled = {!isVerificationSent || isEmailVerified}
                 />
               </InlineInputWrap>
 
