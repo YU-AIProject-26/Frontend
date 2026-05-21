@@ -90,6 +90,22 @@ export default function SignupPage() {
     return `${minutes}:${`${seconds}`.padStart(2, '0')}`;
   }, [remainingSeconds]);
 
+  const isPasswordMatched =
+    password.trim().length > 0 &&
+    passwordConfirm.trim().length > 0 &&
+    password === passwordConfirm;
+
+  const isSignupEnabled =
+    nickname.trim().length > 0 &&
+    email.trim().length > 0 &&
+    isEmailChecked &&
+    isEmailAvailable === true &&
+    isEmailVerified &&
+    password.trim().length > 0 &&
+    passwordConfirm.trim().length > 0 &&
+    isPasswordMatched &&
+    agreedToTerms;
+
   const resetEmailVerificationState = () => {
     setIsEmailChecked(false);
     setIsEmailAvailable(null);
@@ -175,6 +191,10 @@ export default function SignupPage() {
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    if (!isSignupEnabled) {
+      return;
+    }
 
     console.log('회원가입 시도', {
       nickname,
@@ -335,7 +355,9 @@ export default function SignupPage() {
             </TermsLabel>
           </TermsRow>
 
-          <SubmitButton type = "submit">회원가입</SubmitButton>
+          <SubmitButton type = "submit" disabled = {!isSignupEnabled}>
+            회원가입
+          </SubmitButton>
         </Form>
 
         <DividerWrapper>
