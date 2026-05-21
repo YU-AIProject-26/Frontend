@@ -305,14 +305,19 @@ export const SubmitButton = styled.button`
   transition: background-color 0.2s ease;
   margin-top: 0.5rem;
 
-  &:hover {
+  &:hover:not(:disabled) {
     background: rgba(37, 99, 235, 0.9);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 
   html.dark & {
     background: #3b82f6;
 
-    &:hover {
+    &:hover:not(:disabled) {
       background: rgba(59, 130, 246, 0.9);
     }
   }
